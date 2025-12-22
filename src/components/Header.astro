@@ -1,0 +1,76 @@
+---
+const currentPath = Astro.url.pathname;
+---
+
+<header class="bg-white shadow-md sticky top-0 z-50">
+  <nav class="container mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      <!-- Logo -->
+      <a href="/" class="flex items-center space-x-3">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold text-xl">UIT</span>
+        </div>
+        <div class="hidden md:block">
+          <div class="text-lg font-bold text-gray-800">Universitas Indonesia Timur</div>
+          <div class="text-xs text-gray-600">Building Excellence</div>
+        </div>
+      </a>
+
+      <!-- Desktop Menu -->
+      <div class="hidden md:flex items-center space-x-8">
+        <a 
+          href="/" 
+          class:list={[
+            "font-medium transition-colors",
+            currentPath === "/" ? "text-blue-600" : "text-gray-700 hover:text-blue-600"
+          ]}
+        >
+          Beranda
+        </a>
+        <a 
+          href="/profile" 
+          class:list={[
+            "font-medium transition-colors",
+            currentPath === "/profile" ? "text-blue-600" : "text-gray-700 hover:text-blue-600"
+          ]}
+        >
+          Profil
+        </a>
+        <a href="#" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">
+          Program Studi
+        </a>
+        <a href="#" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">
+          Berita
+        </a>
+        <a href="#" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+          Pendaftaran
+        </a>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button id="mobile-menu-button" class="md:hidden text-gray-700 focus:outline-none">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden pt-4 pb-2">
+      <a href="/" class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Beranda</a>
+      <a href="/profile" class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Profil</a>
+      <a href="#" class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Program Studi</a>
+      <a href="#" class="block py-2 text-gray-700 hover:text-blue-600 font-medium">Berita</a>
+      <a href="#" class="block py-2 text-blue-600 font-medium">Pendaftaran</a>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const mobileMenuButton = document.getElementById('mobile-menu-button');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  mobileMenuButton?.addEventListener('click', () => {
+    mobileMenu?.classList.toggle('hidden');
+  });
+</script>

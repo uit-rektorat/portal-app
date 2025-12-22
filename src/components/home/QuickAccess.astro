@@ -1,0 +1,90 @@
+---
+// Quick Access Component
+interface QuickAccessItem {
+  id: string;
+  title: string;
+  icon: string;
+  link: string;
+}
+
+interface Props {
+  items?: QuickAccessItem[];
+}
+
+const { items = [] } = Astro.props;
+
+// Default items if no data from Strapi
+const defaultItems: QuickAccessItem[] = [
+  {
+    id: '1',
+    title: 'Pendaftaran Mahasiswa Baru',
+    icon: 'user-plus',
+    link: '#pendaftaran'
+  },
+  {
+    id: '2',
+    title: 'Portal Mahasiswa',
+    icon: 'graduation-cap',
+    link: '#portal'
+  },
+  {
+    id: '3',
+    title: 'E-Learning',
+    icon: 'book-open',
+    link: '#elearning'
+  },
+  {
+    id: '4',
+    title: 'Perpustakaan Digital',
+    icon: 'library',
+    link: '#library'
+  },
+  {
+    id: '5',
+    title: 'Beasiswa',
+    icon: 'award',
+    link: '#beasiswa'
+  },
+  {
+    id: '6',
+    title: 'Kontak',
+    icon: 'phone',
+    link: '#kontak'
+  }
+];
+
+const quickAccessItems = items.length > 0 ? items : defaultItems;
+
+const iconMap: Record<string, string> = {
+  'user-plus': 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z',
+  'graduation-cap': 'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z',
+  'book-open': 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
+  'library': 'M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z',
+  'award': 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z',
+  'phone': 'M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z'
+};
+---
+
+<section class="py-12 md:py-16 bg-white -mt-10 relative z-10">
+  <div class="container mx-auto px-4">
+    <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+        {quickAccessItems.map((item) => (
+          <a 
+            href={item.link}
+            class="flex flex-col items-center p-4 rounded-xl hover:bg-blue-50 transition-all group"
+          >
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={iconMap[item.icon] || iconMap['book-open']}></path>
+              </svg>
+            </div>
+            <span class="text-sm font-medium text-gray-700 text-center group-hover:text-blue-600 transition-colors">
+              {item.title}
+            </span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

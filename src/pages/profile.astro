@@ -1,0 +1,154 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+// Uncomment when Strapi backend is ready
+// import { getProfile } from '../lib/strapi';
+// const profile = await getProfile();
+
+// Default data
+const profile = {
+  vision: 'Menjadi universitas unggulan yang menghasilkan lulusan berkarakter, kompeten, dan berdaya saing global pada tahun 2030.',
+  mission: [
+    'Menyelenggarakan pendidikan tinggi yang berkualitas dan berorientasi pada kebutuhan masyarakat dan industri',
+    'Mengembangkan penelitian dan pengabdian kepada masyarakat yang inovatif dan bermanfaat',
+    'Membangun budaya akademik yang kondusif untuk pengembangan ilmu pengetahuan dan teknologi',
+    'Menghasilkan lulusan yang berkarakter, kompeten, dan memiliki jiwa kewirausahaan',
+    'Menjalin kemitraan strategis dengan berbagai institusi dalam dan luar negeri'
+  ],
+  history: `Universitas Indonesia Timur (UIT) didirikan pada tahun 1995 dengan visi untuk menjadi pusat pendidikan tinggi yang unggul di Indonesia Timur. Berawal dari sebuah yayasan pendidikan yang memiliki komitmen kuat terhadap peningkatan kualitas sumber daya manusia, UIT telah berkembang menjadi salah satu universitas terkemuka di wilayah Sulawesi Selatan.
+
+Dalam perjalanannya, UIT terus berinovasi dan beradaptasi dengan perkembangan zaman. Dimulai dengan tiga program studi pada tahun pertama, kini UIT memiliki lebih dari 15 program studi yang tersebar di berbagai fakultas. Setiap program studi dirancang untuk memenuhi kebutuhan industri dan masyarakat, dengan kurikulum yang selalu diperbarui sesuai dengan perkembangan ilmu pengetahuan dan teknologi.
+
+UIT juga aktif dalam kegiatan penelitian dan pengabdian kepada masyarakat. Berbagai penelitian yang dilakukan oleh dosen dan mahasiswa telah memberikan kontribusi nyata bagi pengembangan ilmu pengetahuan dan solusi terhadap permasalahan yang dihadapi masyarakat. Kerja sama dengan berbagai institusi pendidikan dan industri, baik di dalam maupun luar negeri, semakin memperkuat posisi UIT sebagai universitas yang berkomitmen pada kualitas dan relevansi pendidikan.
+
+Dengan fasilitas modern, dosen berkualitas, dan lingkungan akademik yang kondusif, UIT terus berupaya mewujudkan visinya untuk menjadi universitas unggulan yang menghasilkan lulusan berkarakter, kompeten, dan berdaya saing global.`
+};
+---
+
+<BaseLayout 
+  title="Profil - Universitas Indonesia Timur" 
+  description="Visi, Misi, dan Sejarah Universitas Indonesia Timur"
+>
+  <Header slot="header" />
+  
+  <!-- Page Header -->
+  <section class="bg-gradient-to-r from-blue-900 to-blue-800 text-white py-16 md:py-20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Profil UIT</h1>
+        <p class="text-xl text-blue-100">
+          Membangun Generasi Unggul dan Berkarakter
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Visi -->
+  <section class="py-16 md:py-20 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto">
+        <div class="flex items-start mb-8">
+          <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 mr-6">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Visi</h2>
+            <p class="text-lg text-gray-700 leading-relaxed">
+              {profile.vision}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Misi -->
+  <section class="py-16 md:py-20 bg-gray-50">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto">
+        <div class="flex items-start mb-8">
+          <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center flex-shrink-0 mr-6">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Misi</h2>
+            <ul class="space-y-4">
+              {profile.mission.map((item, index) => (
+                <li class="flex items-start">
+                  <span class="flex-shrink-0 w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold mr-4 mt-1">
+                    {index + 1}
+                  </span>
+                  <p class="text-lg text-gray-700 leading-relaxed flex-1">
+                    {item}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sejarah -->
+  <section class="py-16 md:py-20 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto">
+        <div class="flex items-start mb-8">
+          <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 mr-6">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">Sejarah</h2>
+            <div class="prose prose-lg max-w-none">
+              {profile.history.split('\n\n').map((paragraph) => (
+                <p class="text-gray-700 leading-relaxed mb-4">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action -->
+  <section class="py-16 bg-gradient-to-r from-blue-900 to-blue-800 text-white">
+    <div class="container mx-auto px-4">
+      <div class="max-w-3xl mx-auto text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">
+          Bergabunglah dengan UIT
+        </h2>
+        <p class="text-xl text-blue-100 mb-8">
+          Wujudkan impian Anda bersama Universitas Indonesia Timur
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a 
+            href="#" 
+            class="inline-block bg-white text-blue-900 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+          >
+            Daftar Sekarang
+          </a>
+          <a 
+            href="/" 
+            class="inline-block bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors border-2 border-blue-500"
+          >
+            Kembali ke Beranda
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</BaseLayout>

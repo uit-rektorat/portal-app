@@ -1,0 +1,179 @@
+---
+// Hero Slider Component
+interface Slide {
+  id: string;
+  title: string;
+  subtitle: string;
+  image?: string;
+  buttonText?: string;
+  buttonLink?: string;
+}
+
+interface Props {
+  slides?: Slide[];
+}
+
+const { slides = [] } = Astro.props;
+
+// Default slides if no data from Strapi
+const defaultSlides: Slide[] = [
+  {
+    id: '1',
+    title: 'Selamat Datang di UIT',
+    subtitle: 'Universitas Indonesia Timur - Membangun Generasi Unggul dan Berkarakter',
+    buttonText: 'Daftar Sekarang',
+    buttonLink: '#pendaftaran'
+  },
+  {
+    id: '2',
+    title: 'Program Studi Berkualitas',
+    subtitle: 'Berbagai pilihan program studi dengan kurikulum yang relevan dan terakreditasi',
+    buttonText: 'Lihat Program Studi',
+    buttonLink: '#program'
+  },
+  {
+    id: '3',
+    title: 'Fasilitas Modern',
+    subtitle: 'Kampus dengan fasilitas lengkap untuk mendukung proses pembelajaran',
+    buttonText: 'Jelajahi Kampus',
+    buttonLink: '#kampus'
+  }
+];
+
+const heroSlides = slides.length > 0 ? slides : defaultSlides;
+---
+
+<section class="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 overflow-hidden">
+  <!-- Slider Container -->
+  <div class="hero-slider relative">
+    {heroSlides.map((slide, index) => (
+      <div 
+        class={`slide ${index === 0 ? 'active' : ''}`}
+        data-slide={index}
+      >
+        <div class="container mx-auto px-4 py-16 md:py-24 lg:py-32">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <!-- Content -->
+            <div class="text-white space-y-6 animate-fade-in">
+              <h1 class="text-3xl md:text-4xl lg:text-6xl font-bold leading-tight">
+                {slide.title}
+              </h1>
+              <p class="text-lg md:text-xl text-blue-100">
+                {slide.subtitle}
+              </p>
+              {slide.buttonText && slide.buttonLink && (
+                <div class="pt-4">
+                  <a 
+                    href={slide.buttonLink}
+                    class="inline-block bg-white text-blue-900 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-lg"
+                  >
+                    {slide.buttonText}
+                  </a>
+                </div>
+              )}
+            </div>
+
+            <!-- Image/Illustration -->
+            <div class="hidden lg:block">
+              {slide.image ? (
+                <img 
+                  src={slide.image} 
+                  alt={slide.title}
+                  class="w-full h-auto rounded-lg shadow-2xl"
+                />
+              ) : (
+                <div class="bg-blue-700/30 backdrop-blur-sm rounded-2xl p-8 border border-blue-500/30">
+                  <svg class="w-full h-64 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                  </svg>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <!-- Navigation Dots -->
+  {heroSlides.length > 1 && (
+    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-10">
+      {heroSlides.map((_, index) => (
+        <button 
+          class={`dot w-3 h-3 rounded-full transition-all ${index === 0 ? 'bg-white w-8' : 'bg-white/50'}`}
+          data-slide-to={index}
+          aria-label={`Go to slide ${index + 1}`}
+        >
+        </button>
+      ))}
+    </div>
+  )}
+
+  <!-- Decorative Elements -->
+  <div class="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-0 left-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
+</section>
+
+<style>
+  .hero-slider {
+    position: relative;
+    min-height: 500px;
+  }
+
+  .slide {
+    display: none;
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  .slide.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out;
+  }
+</style>
+
+<script>
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.dot');
+
+  function showSlide(n: number) {
+    slides.forEach(slide => slide.classList.remove('active'));
+    dots.forEach(dot => {
+      dot.classList.remove('bg-white', 'w-8');
+      dot.classList.add('bg-white/50');
+    });
+
+    currentSlide = (n + slides.length) % slides.length;
+    slides[currentSlide].classList.add('active');
+    dots[currentSlide].classList.add('bg-white', 'w-8');
+    dots[currentSlide].classList.remove('bg-white/50');
+  }
+
+  function nextSlide() {
+    showSlide(currentSlide + 1);
+  }
+
+  // Auto advance slides
+  if (slides.length > 1) {
+    setInterval(nextSlide, 5000);
+  }
+
+  // Dot navigation
+  dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => showSlide(index));
+  });
+</script>
