@@ -8,14 +8,53 @@ Panduan lengkap untuk membuat Content Types di Strapi yang terintegrasi dengan P
 **API ID**: `hero`
 
 Fields:
-- `title` (Text, Required) - Judul hero slide
-- `subtitle` (Text, Required) - Subtitle hero slide
-- `image` (Media - Single Image, Optional) - Gambar background
-- `buttonText` (Text, Optional) - Teks tombol CTA
-- `buttonLink` (Text, Optional) - Link tombol CTA
+- `title` (Text, Required) - Judul hero slide (max 60 karakter untuk tampilan optimal)
+- `subtitle` (Text, Required) - Subtitle hero slide (max 80 karakter)
+- `description` (Text, Optional) - Deskripsi tambahan (max 150 karakter)
+- `image` (Media - Single Image, Optional) - Gambar hero slide
+- `buttonText` (Text, Optional) - Teks tombol CTA utama
+- `buttonLink` (Text, Optional) - Link tombol CTA utama
+- `buttonSecondaryText` (Text, Optional) - Teks tombol CTA sekunder
+- `buttonSecondaryLink` (Text, Optional) - Link tombol CTA sekunder
+- `layout` (Enumeration, Optional) - Variasi layout slide
+  - Values: `default`, `full-image`, `centered`, `minimal`
+  - Default: `default`
+
+**Layout Variations:**
+1. **default** - Text di kiri, gambar di kanan (klasik, seimbang)
+2. **full-image** - Gambar full dengan text overlay (dramatis, eye-catching)
+3. **centered** - Text centered tanpa gambar (fokus pada message)
+4. **minimal** - Compact, simple text (profesional, clean)
+
+**Rekomendasi Ukuran Gambar:**
+- **Layout Default**: 1200x800px (ratio 3:2) - untuk gambar di samping teks
+- **Layout Full-Image**: 1920x1080px (ratio 16:9) - untuk background full
+- Format: JPG atau PNG
+- Ukuran file: Max 500KB (gunakan compression untuk optimasi)
+- Quality: 80-85% compression untuk balance antara kualitas dan kecepatan
+
+**Tips Gambar:**
+- Gunakan gambar landscape untuk layout default dan full-image
+- Pastikan area penting gambar tidak tertutup text (untuk full-image)
+- Hindari gambar terlalu ramai untuk full-image layout
+- Gunakan gambar dengan kontras baik agar text tetap mudah dibaca
 
 **Permissions**: 
 - Public: `find`, `findOne`
+
+**Contoh Data:**
+```json
+{
+  "title": "Selamat Datang di UIT",
+  "subtitle": "Universitas Indonesia Timur",
+  "description": "Membangun Generasi Unggul dan Berkarakter",
+  "layout": "centered",
+  "buttonText": "Daftar Sekarang",
+  "buttonLink": "/pendaftaran",
+  "buttonSecondaryText": "Pelajari Lebih Lanjut",
+  "buttonSecondaryLink": "/profile"
+}
+```
 
 ---
 
@@ -101,7 +140,96 @@ Fields:
 
 ---
 
-## 🔧 Cara Membuat Content Type di Strapi
+## �️ Panduan Upload dan Optimasi Gambar
+
+### Rekomendasi Ukuran Gambar untuk Setiap Content Type
+
+#### 1. Hero Slider Images
+- **Layout Default**: 1200x800px (ratio 3:2)
+- **Layout Full-Image**: 1920x1080px (ratio 16:9)
+- **Format**: JPG (untuk foto), PNG (untuk grafis dengan transparansi)
+- **Max Size**: 500KB per file
+- **Quality**: 80-85% compression
+
+#### 2. News/Article Images
+- **Recommended**: 800x600px (ratio 4:3)
+- **Format**: JPG atau PNG
+- **Max Size**: 300KB per file
+
+#### 3. Testimonial Avatar
+- **Recommended**: 400x400px (square/1:1)
+- **Format**: JPG atau PNG
+- **Max Size**: 100KB per file
+
+### Tools untuk Optimasi Gambar
+
+**Online Tools (Gratis):**
+- [TinyPNG](https://tinypng.com/) - Kompresi PNG & JPG
+- [Squoosh](https://squoosh.app/) - Google's image optimizer
+- [Compressor.io](https://compressor.io/) - Kompresi hingga 90%
+
+**Desktop Apps:**
+- Adobe Photoshop - "Save for Web"
+- GIMP (Free) - Export dengan quality adjustment
+- XnConvert (Free) - Batch processing
+
+### Cara Upload Gambar di Strapi
+
+1. **Via Content Manager:**
+   - Buka Content Manager > Pilih Content Type
+   - Klik "Create new entry"
+   - Pada field Media, klik "Browse" atau drag & drop
+   - Upload gambar yang sudah dioptimasi
+   - Isi "Alternative text" untuk SEO
+
+2. **Via Media Library:**
+   - Buka Media Library di menu kiri
+   - Klik "Add new assets"
+   - Upload multiple images sekaligus
+   - Gunakan folder untuk organisasi
+
+### Tips Upload Gambar
+
+✅ **DO:**
+- Resize gambar sebelum upload (gunakan ukuran rekomendasi)
+- Compress gambar untuk mengurangi ukuran file
+- Gunakan nama file deskriptif (contoh: `kampus-uit-gedung-utama.jpg`)
+- Isi alternative text untuk SEO
+- Gunakan format yang tepat (JPG untuk foto, PNG untuk logo/grafis)
+
+❌ **DON'T:**
+- Upload gambar langsung dari kamera (biasanya 5-10MB)
+- Gunakan nama file generic (contoh: `IMG_1234.jpg`)
+- Skip alternative text
+- Upload gambar dengan resolusi terlalu tinggi
+- Gunakan format BMP atau TIFF
+
+### Konfigurasi Upload di Strapi
+
+Edit `config/plugins.js` untuk mengatur upload limits:
+
+```javascript
+module.exports = {
+  upload: {
+    config: {
+      sizeLimit: 1000000, // 1MB in bytes
+      breakpoints: {
+        xlarge: 1920,
+        large: 1000,
+        medium: 750,
+        small: 500,
+        xsmall: 64
+      },
+    },
+  },
+};
+```
+
+Strapi akan otomatis generate multiple sizes untuk responsive images!
+
+---
+
+## �🔧 Cara Membuat Content Type di Strapi
 
 ### Langkah-langkah:
 
@@ -178,19 +306,25 @@ GraphQL Playground akan tersedia di:
 ### Get Heroes
 ```graphql
 query {
-  heroes {
+  heroes(sort: "createdAt:asc") {
     data {
       id
       attributes {
         title
         subtitle
+        description
         buttonText
         buttonLink
+        buttonSecondaryText
+        buttonSecondaryLink
+        layout
         image {
           data {
             attributes {
               url
               alternativeText
+              width
+              height
             }
           }
         }

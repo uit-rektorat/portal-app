@@ -1,12 +1,16 @@
 ---
-// Hero Slider Component
+// Hero Slider Component with Multiple Layout Variations
 interface Slide {
   id: string;
   title: string;
   subtitle: string;
+  description?: string;
   image?: string;
   buttonText?: string;
   buttonLink?: string;
+  buttonSecondaryText?: string;
+  buttonSecondaryLink?: string;
+  layout?: 'default' | 'full-image' | 'centered' | 'minimal';
 }
 
 interface Props {
@@ -15,26 +19,35 @@ interface Props {
 
 const { slides = [] } = Astro.props;
 
-// Default slides if no data from Strapi
+// Default slides with layout variations if no data from Strapi
 const defaultSlides: Slide[] = [
   {
     id: '1',
     title: 'Selamat Datang di UIT',
-    subtitle: 'Universitas Indonesia Timur - Membangun Generasi Unggul dan Berkarakter',
-    buttonText: 'Daftar Sekarang',
-    buttonLink: '#pendaftaran'
+    subtitle: 'Universitas Indonesia Timur',
+    description: 'Membangun Generasi Unggul dan Berkarakter untuk Indonesia yang Lebih Baik',
+    layout: 'centered',
+    // Uncomment saat pendaftaran MABA dibuka
+    // buttonText: 'Daftar Sekarang',
+    // buttonLink: '#pendaftaran',
+    buttonSecondaryText: 'Pelajari Lebih Lanjut',
+    buttonSecondaryLink: '/profile'
   },
   {
     id: '2',
     title: 'Program Studi Berkualitas',
-    subtitle: 'Berbagai pilihan program studi dengan kurikulum yang relevan dan terakreditasi',
+    subtitle: 'Terakreditasi & Berbasis Industri',
+    description: 'Berbagai pilihan program studi dengan kurikulum yang relevan dan terakreditasi',
+    layout: 'default',
     buttonText: 'Lihat Program Studi',
     buttonLink: '#program'
   },
   {
     id: '3',
     title: 'Fasilitas Modern',
-    subtitle: 'Kampus dengan fasilitas lengkap untuk mendukung proses pembelajaran',
+    subtitle: 'Mendukung Pembelajaran Berkualitas',
+    description: 'Kampus dengan fasilitas lengkap untuk mendukung proses pembelajaran',
+    layout: 'default',
     buttonText: 'Jelajahi Kampus',
     buttonLink: '#kampus'
   }
@@ -43,64 +56,224 @@ const defaultSlides: Slide[] = [
 const heroSlides = slides.length > 0 ? slides : defaultSlides;
 ---
 
-<section class="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 overflow-hidden">
+<section class="relative bg-gradient-to-br from-uit-green-dark via-uit-green to-uit-green-light overflow-hidden">
   <!-- Slider Container -->
   <div class="hero-slider relative">
-    {heroSlides.map((slide, index) => (
-      <div 
-        class={`slide ${index === 0 ? 'active' : ''}`}
-        data-slide={index}
-      >
-        <div class="container mx-auto px-4 py-16 md:py-24 lg:py-32">
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <!-- Content -->
-            <div class="text-white space-y-6 animate-fade-in">
-              <h1 class="text-3xl md:text-4xl lg:text-6xl font-bold leading-tight">
-                {slide.title}
-              </h1>
-              <p class="text-lg md:text-xl text-blue-100">
-                {slide.subtitle}
-              </p>
-              {slide.buttonText && slide.buttonLink && (
-                <div class="pt-4">
-                  <a 
-                    href={slide.buttonLink}
-                    class="inline-block bg-white text-blue-900 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-lg"
-                  >
-                    {slide.buttonText}
-                  </a>
+    {heroSlides.map((slide, index) => {
+      const layout = slide.layout || 'default';
+      
+      return (
+        <div 
+          class={`slide ${index === 0 ? 'active' : ''}`}
+          data-slide={index}
+          data-layout={layout}
+        >
+          {/* Layout: Full Image with Overlay Text */}
+          {layout === 'full-image' && slide.image && (
+            <div class="relative min-h-[500px] md:min-h-[600px] lg:min-h-[700px]">
+              <img 
+                src={slide.image} 
+                alt={slide.title}
+                class="absolute inset-0 w-full h-full object-cover"
+              />
+              <div class="absolute inset-0 bg-gradient-to-r from-uit-green-dark/95 via-uit-green/80 to-transparent"></div>
+              <div class="relative container mx-auto px-4 h-full flex items-center">
+                <div class="max-w-2xl text-white space-y-6 py-20 animate-fade-in">
+                  <h1 class="text-4xl md:text-5xl lg:text-7xl font-bold leading-tight">
+                    {slide.title}
+                  </h1>
+                  <p class="text-xl md:text-2xl font-semibold text-uit-green-light">
+                    {slide.subtitle}
+                  </p>
+                  {slide.description && (
+                    <p class="text-lg md:text-xl text-white/90">
+                      {slide.description}
+                    </p>
+                  )}
+                  {(slide.buttonText || slide.buttonSecondaryText) && (
+                    <div class="flex flex-wrap gap-4 pt-4">
+                      {slide.buttonText && slide.buttonLink && (
+                        <a 
+                          href={slide.buttonLink}
+                          class="inline-block bg-white text-uit-green-dark px-8 py-4 rounded-lg font-semibold hover:bg-uit-bg transition-all shadow-xl hover:shadow-2xl transform hover:scale-105"
+                        >
+                          {slide.buttonText}
+                        </a>
+                      )}
+                      {slide.buttonSecondaryText && slide.buttonSecondaryLink && (
+                        <a 
+                          href={slide.buttonSecondaryLink}
+                          class="inline-block bg-transparent text-white px-8 py-4 rounded-lg font-semibold hover:bg-white/10 transition-all border-2 border-white"
+                        >
+                          {slide.buttonSecondaryText}
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
+          )}
 
-            <!-- Image/Illustration -->
-            <div class="hidden lg:block">
-              {slide.image ? (
-                <img 
-                  src={slide.image} 
-                  alt={slide.title}
-                  class="w-full h-auto rounded-lg shadow-2xl"
-                />
-              ) : (
-                <div class="bg-blue-700/30 backdrop-blur-sm rounded-2xl p-8 border border-blue-500/30">
-                  <svg class="w-full h-64 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                  </svg>
-                </div>
-              )}
+          {/* Layout: Centered Text (No Image) */}
+          {layout === 'centered' && (
+            <div class="container mx-auto px-4 py-20 md:py-28 lg:py-36">
+              <div class="max-w-4xl mx-auto text-center text-white space-y-8 animate-fade-in">
+                <h1 class="text-4xl md:text-5xl lg:text-7xl font-bold leading-tight">
+                  {slide.title}
+                </h1>
+                <p class="text-2xl md:text-3xl font-semibold text-white">
+                  {slide.subtitle}
+                </p>
+                {slide.description && (
+                  <p class="text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
+                    {slide.description}
+                  </p>
+                )}
+                {(slide.buttonText || slide.buttonSecondaryText) && (
+                  <div class="flex flex-wrap gap-4 justify-center pt-6">
+                    {slide.buttonText && slide.buttonLink && (
+                      <a 
+                        href={slide.buttonLink}
+                        class="inline-block bg-white text-uit-green-dark px-10 py-4 rounded-lg font-semibold hover:bg-uit-bg transition-all shadow-xl hover:shadow-2xl transform hover:scale-105 text-lg"
+                      >
+                        {slide.buttonText}
+                      </a>
+                    )}
+                    {slide.buttonSecondaryText && slide.buttonSecondaryLink && (
+                      <a 
+                        href={slide.buttonSecondaryLink}
+                        class="inline-block bg-transparent text-white px-10 py-4 rounded-lg font-semibold hover:bg-white/10 transition-all border-2 border-white text-lg"
+                      >
+                        {slide.buttonSecondaryText}
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Layout: Minimal (Compact) */}
+          {layout === 'minimal' && (
+            <div class="container mx-auto px-4 py-16 md:py-20">
+              <div class="max-w-3xl text-white space-y-6 animate-fade-in">
+                <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
+                  {slide.title}
+                </h1>
+                <p class="text-xl md:text-2xl text-white/90">
+                  {slide.subtitle}
+                </p>
+                {slide.buttonText && slide.buttonLink && (
+                  <div class="pt-4">
+                    <a 
+                      href={slide.buttonLink}
+                      class="inline-flex items-center text-white hover:text-uit-green-light font-semibold text-lg group"
+                    >
+                      {slide.buttonText}
+                      <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                      </svg>
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Layout: Default (Text + Image Side by Side) */}
+          {layout === 'default' && (
+            <div class="container mx-auto px-4 py-16 md:py-24 lg:py-32">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+                <!-- Content -->
+                <div class="text-white space-y-6 animate-fade-in">
+                  <h1 class="text-3xl md:text-4xl lg:text-6xl font-bold leading-tight">
+                    {slide.title}
+                  </h1>
+                  <p class="text-xl md:text-2xl font-semibold text-uit-green-light">
+                    {slide.subtitle}
+                  </p>
+                  {slide.description && (
+                    <p class="text-lg md:text-xl text-white/90">
+                      {slide.description}
+                    </p>
+                  )}
+                  {(slide.buttonText || slide.buttonSecondaryText) && (
+                    <div class="flex flex-wrap gap-4 pt-4">
+                      {slide.buttonText && slide.buttonLink && (
+                        <a 
+                          href={slide.buttonLink}
+                          class="inline-block bg-white text-uit-green-dark px-8 py-3 rounded-lg font-semibold hover:bg-uit-bg transition-all shadow-lg"
+                        >
+                          {slide.buttonText}
+                        </a>
+                      )}
+                      {slide.buttonSecondaryText && slide.buttonSecondaryLink && (
+                        <a 
+                          href={slide.buttonSecondaryLink}
+                          class="inline-block bg-transparent text-white px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition-all border-2 border-white"
+                        >
+                          {slide.buttonSecondaryText}
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <!-- Image/Illustration -->
+                <div class="hidden lg:block animate-fade-in-right">
+                  {slide.image ? (
+                    <img 
+                      src={slide.image} 
+                      alt={slide.title}
+                      class="w-full h-auto rounded-2xl shadow-2xl object-cover max-h-[500px]"
+                    />
+                  ) : (
+                    <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/30">
+                      <svg class="w-full h-64 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
-    ))}
+      );
+    })}
   </div>
+
+  <!-- Navigation Arrows -->
+  {heroSlides.length > 1 && (
+    <>
+      <button 
+        id="slider-prev"
+        class="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-14 md:h-14 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-all z-20 group"
+        aria-label="Previous slide"
+      >
+        <svg class="w-6 h-6 md:w-7 md:h-7 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      <button 
+        id="slider-next"
+        class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-14 md:h-14 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center transition-all z-20 group"
+        aria-label="Next slide"
+      >
+        <svg class="w-6 h-6 md:w-7 md:h-7 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+    </>
+  )}
 
   <!-- Navigation Dots -->
   {heroSlides.length > 1 && (
-    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-10">
+    <div class="absolute bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20">
       {heroSlides.map((_, index) => (
         <button 
-          class={`dot w-3 h-3 rounded-full transition-all ${index === 0 ? 'bg-white w-8' : 'bg-white/50'}`}
+          class={`dot h-3 md:h-3.5 rounded-full transition-all duration-300 ${index === 0 ? 'bg-white w-10 md:w-12' : 'bg-white/50 w-3 md:w-3.5 hover:bg-white/70'}`}
           data-slide-to={index}
           aria-label={`Go to slide ${index + 1}`}
         >
@@ -110,8 +283,8 @@ const heroSlides = slides.length > 0 ? slides : defaultSlides;
   )}
 
   <!-- Decorative Elements -->
-  <div class="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-  <div class="absolute bottom-0 left-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
+  <div class="absolute top-0 right-0 w-96 h-96 bg-uit-green-light/10 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
 </section>
 
 <style>
@@ -122,7 +295,7 @@ const heroSlides = slides.length > 0 ? slides : defaultSlides;
 
   .slide {
     display: none;
-    animation: fadeIn 0.5s ease-in;
+    animation: fadeIn 0.6s ease-in-out;
   }
 
   .slide.active {
@@ -140,8 +313,29 @@ const heroSlides = slides.length > 0 ? slides : defaultSlides;
     }
   }
 
+  @keyframes fadeInRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
   .animate-fade-in {
     animation: fadeIn 0.8s ease-out;
+  }
+
+  .animate-fade-in-right {
+    animation: fadeInRight 0.8s ease-out;
+  }
+
+  /* Ensure images don't exceed container */
+  .slide img {
+    max-width: 100%;
+    height: auto;
   }
 </style>
 
@@ -149,31 +343,81 @@ const heroSlides = slides.length > 0 ? slides : defaultSlides;
   let currentSlide = 0;
   const slides = document.querySelectorAll('.slide');
   const dots = document.querySelectorAll('.dot');
+  const prevBtn = document.getElementById('slider-prev');
+  const nextBtn = document.getElementById('slider-next');
+  let autoPlayInterval: number;
 
   function showSlide(n: number) {
     slides.forEach(slide => slide.classList.remove('active'));
     dots.forEach(dot => {
-      dot.classList.remove('bg-white', 'w-8');
-      dot.classList.add('bg-white/50');
+      dot.classList.remove('bg-white', 'w-10', 'md:w-12');
+      dot.classList.add('bg-white/50', 'w-3', 'md:w-3.5');
     });
 
     currentSlide = (n + slides.length) % slides.length;
     slides[currentSlide].classList.add('active');
-    dots[currentSlide].classList.add('bg-white', 'w-8');
-    dots[currentSlide].classList.remove('bg-white/50');
+    dots[currentSlide].classList.add('bg-white', 'w-10', 'md:w-12');
+    dots[currentSlide].classList.remove('bg-white/50', 'w-3', 'md:w-3.5');
   }
 
   function nextSlide() {
     showSlide(currentSlide + 1);
   }
 
-  // Auto advance slides
-  if (slides.length > 1) {
-    setInterval(nextSlide, 5000);
+  function prevSlide() {
+    showSlide(currentSlide - 1);
   }
+
+  function startAutoPlay() {
+    if (slides.length > 1) {
+      autoPlayInterval = setInterval(nextSlide, 6000);
+    }
+  }
+
+  function stopAutoPlay() {
+    clearInterval(autoPlayInterval);
+  }
+
+  // Arrow navigation
+  prevBtn?.addEventListener('click', () => {
+    prevSlide();
+    stopAutoPlay();
+    startAutoPlay(); // Restart after manual navigation
+  });
+
+  nextBtn?.addEventListener('click', () => {
+    nextSlide();
+    stopAutoPlay();
+    startAutoPlay();
+  });
 
   // Dot navigation
   dots.forEach((dot, index) => {
-    dot.addEventListener('click', () => showSlide(index));
+    dot.addEventListener('click', () => {
+      showSlide(index);
+      stopAutoPlay();
+      startAutoPlay();
+    });
   });
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') {
+      prevSlide();
+      stopAutoPlay();
+      startAutoPlay();
+    } else if (e.key === 'ArrowRight') {
+      nextSlide();
+      stopAutoPlay();
+      startAutoPlay();
+    }
+  });
+
+  // Pause on hover
+  const sliderSection = document.querySelector('.hero-slider');
+  sliderSection?.addEventListener('mouseenter', stopAutoPlay);
+  sliderSection?.addEventListener('mouseleave', startAutoPlay);
+
+  // Start auto-play
+  startAutoPlay();
 </script>

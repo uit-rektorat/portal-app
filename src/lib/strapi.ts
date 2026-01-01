@@ -13,12 +13,16 @@ export interface Hero {
   id: string;
   title: string;
   subtitle: string;
-  image: {
+  description?: string;
+  image?: {
     url: string;
-    alternativeText: string;
+    alternativeText?: string;
   };
-  buttonText: string;
-  buttonLink: string;
+  buttonText?: string;
+  buttonLink?: string;
+  buttonSecondaryText?: string;
+  buttonSecondaryLink?: string;
+  layout?: 'default' | 'full-image' | 'centered' | 'minimal';
 }
 
 export interface QuickAccess {
@@ -69,22 +73,28 @@ export interface Profile {
 export const getHeroSlides = async (): Promise<Hero[]> => {
   const query = `
     query {
-      heroes {
+      heroes(sort: "createdAt:asc") {
         data {
           id
           attributes {
             title
             subtitle
+            description
             image {
               data {
                 attributes {
                   url
                   alternativeText
+                  width
+                  height
                 }
               }
             }
             buttonText
             buttonLink
+            buttonSecondaryText
+            buttonSecondaryLink
+            layout
           }
         }
       }
@@ -93,7 +103,22 @@ export const getHeroSlides = async (): Promise<Hero[]> => {
 
   try {
     const data: any = await strapiClient.request(query);
-    return data.heroes?.data || [];
+    const heroes = data.heroes?.data?.map((item: any) => {
+      const attrs = item.attributes;
+      return {
+        id: item.id,
+        title: attrs.title,
+        subtitle: attrs.subtitle,
+        description: attrs.description,
+        image: attrs.image?.data ? `${STRAPI_URL}${attrs.image.data.attributes.url}` : undefined,
+        buttonText: attrs.buttonText,
+        buttonLink: attrs.buttonLink,
+        buttonSecondaryText: attrs.buttonSecondaryText,
+        buttonSecondaryLink: attrs.buttonSecondaryLink,
+        layout: attrs.layout || 'default'
+      };
+    }) || [];
+    return heroes;
   } catch (error) {
     console.error('Error fetching hero slides:', error);
     return [];

@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+@theme {
+    /* UIT Official Colors */
+    --color-uit-green: #009B4C;
+    --color-uit-green-dark: #007A3C;
+    --color-uit-green-light: #2BB673;
+    --color-uit-bg: #F5F7F6;
+    --color-uit-text: #4A4A4A;
+}

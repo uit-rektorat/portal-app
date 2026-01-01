@@ -5,10 +5,14 @@ Website profile kampus Universitas Indonesia Timur (UIT) yang dibangun dengan As
 ## 🚀 Fitur
 
 - **Mobile-First Design**: Responsif di semua perangkat
-- **Modern & Professional**: Tampilan modern dengan Tailwind CSS
+- **Modern & Professional**: Tampilan modern dengan warna resmi UIT
+- **Hero Slider with Multiple Layouts**: 4 variasi layout slider (default, full-image, centered, minimal)
 - **Modular Components**: Komponen yang dapat digunakan kembali
-- **Strapi Integration**: Siap terintegrasi dengan Strapi GraphQL API
-- **Social Media Links**: Terintegrasi dengan YouTube, Instagram, dan Facebook
+- **Strapi CMS Integration**: Content management dengan Strapi GraphQL API
+- **Social Media Integration**: YouTube, Instagram, Facebook di header
+- **Optimized Images**: Auto-responsive dengan breakpoints
+- **Keyboard Navigation**: Support keyboard untuk slider
+- **Auto-play Slider**: Smooth transition dengan pause on hover
 
 ## 📁 Struktur Proyek
 
@@ -43,7 +47,11 @@ Website profile kampus Universitas Indonesia Timur (UIT) yang dibangun dengan As
 
 ### 1. Beranda (Home)
 Halaman utama dengan section:
-- **Hero/Slider**: Banner utama dengan slider otomatis
+- **Hero/Slider**: Banner utama dengan 4 variasi layout:
+  - `default`: Text + Image side-by-side
+  - `full-image`: Full background image dengan text overlay
+  - `centered`: Text centered tanpa image
+  - `minimal`: Compact text dengan link style
 - **Quick Access**: Akses cepat ke berbagai layanan kampus
 - **Keunggulan Kampus**: Showcase keunggulan UIT
 - **Berita/Pengumuman**: Informasi terkini
@@ -91,7 +99,7 @@ npx create-strapi-app@latest backend --quickstart
 ```
 
 2. Buat Content Types di Strapi sesuai dengan struktur data yang dibutuhkan:
-   - **Heroes** (Hero Slider)
+   - **Heroes** (Hero Slider) - Lihat [HERO_SLIDER_GUIDE.md](HERO_SLIDER_GUIDE.md)
    - **Quick Accesses** (Quick Access)
    - **Campus Advantages** (Keunggulan Kampus)
    - **Articles** (Berita/Pengumuman)
@@ -105,9 +113,38 @@ npm install @strapi/plugin-graphql
 
 4. Konfigurasi permissions untuk public access di Strapi admin panel
 
+**Dokumentasi Lengkap:**
+- 📖 [STRAPI_GUIDE.md](STRAPI_GUIDE.md) - Setup Strapi & Content Types
+- 🎨 [HERO_SLIDER_GUIDE.md](HERO_SLIDER_GUIDE.md) - Panduan Hero Slider dengan variasi layout
+
 ### Mengaktifkan Data dari Strapi
 
 Di file `src/pages/index.astro` dan `src/pages/profile.astro`, uncomment bagian import Strapi dan pass data ke components.
+
+**Example:**
+```typescript
+// Uncomment these lines
+import { getHeroSlides } from '../lib/strapi';
+const heroSlides = await getHeroSlides();
+
+// Pass to component
+<HeroSlider slides={heroSlides} />
+```
+
+## 🖼️ Rekomendasi Gambar
+
+### Hero Slider
+- **Default Layout**: 1200x800px (3:2 ratio) - JPG, max 500KB
+- **Full-Image Layout**: 1920x1080px (16:9 ratio) - JPG, max 500KB
+- **Tools**: [TinyPNG](https://tinypng.com/), [Squoosh](https://squoosh.app/)
+
+### Articles/News
+- **Size**: 800x600px (4:3 ratio) - JPG, max 300KB
+
+### Testimonials Avatar
+- **Size**: 400x400px (1:1 ratio) - JPG, max 100KB
+
+**Lihat detail lengkap di [HERO_SLIDER_GUIDE.md](HERO_SLIDER_GUIDE.md)**
 
 ## 🎨 Customization
 

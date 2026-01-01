@@ -1,42 +1,55 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import HeroSlider from '../components/home/HeroSlider.astro';
-import QuickAccess from '../components/home/QuickAccess.astro';
-import CampusAdvantages from '../components/home/CampusAdvantages.astro';
-import NewsSection from '../components/home/NewsSection.astro';
-import Testimonials from '../components/home/Testimonials.astro';
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import HeroSlider from "../components/home/HeroSlider.astro";
+import QuickAccess from "../components/home/QuickAccess.astro";
+import CampusAdvantages from "../components/home/CampusAdvantages.astro";
+import CampusInfo from "../components/home/CampusInfo.astro";
+import Testimonials from "../components/home/Testimonials.astro";
 
-// Uncomment these when your Strapi backend is ready
-// import { getHeroSlides, getQuickAccess, getCampusAdvantages, getNews, getTestimonials } from '../lib/strapi';
+// ===== STRAPI CMS INTEGRATION =====
+// Uncomment these lines when your Strapi backend is ready and running
+// Make sure to set PUBLIC_STRAPI_URL in your .env file
+// import { getHeroSlides, getQuickAccess, getCampusAdvantages, getNews, getAgenda, getAnnouncements, getTestimonials } from '../lib/strapi';
+
+// Fetch data from Strapi
 // const heroSlides = await getHeroSlides();
 // const quickAccessItems = await getQuickAccess();
 // const advantages = await getCampusAdvantages();
 // const news = await getNews(6);
+// const agenda = await getAgenda(4);
+// const announcements = await getAnnouncements(5);
 // const testimonials = await getTestimonials();
+
+// Note: Component akan menggunakan data default jika tidak ada data dari Strapi
 ---
 
-<BaseLayout 
-  title="Beranda - Universitas Indonesia Timur" 
+<BaseLayout
+  title="Beranda - Universitas Indonesia Timur"
   description="Universitas Indonesia Timur - Membangun Generasi Unggul dan Berkarakter untuk Indonesia yang Lebih Baik"
 >
   <Header slot="header" />
-  
+
   <!-- Hero / Slider -->
+  <!-- Pass slides={heroSlides} when Strapi is ready -->
   <HeroSlider />
-  
+
   <!-- Quick Access -->
+  <!-- Pass items={quickAccessItems} when Strapi is ready -->
   <QuickAccess />
-  
+
   <!-- Keunggulan Kampus -->
+  <!-- Pass advantages={advantages} when Strapi is ready -->
   <CampusAdvantages />
-  
-  <!-- Berita / Pengumuman -->
-  <NewsSection />
-  
+
+  <!-- Informasi Kampus (Berita, Agenda, Pengumuman) -->
+  <!-- Pass news={news} agenda={agenda} announcements={announcements} when Strapi is ready -->
+  <CampusInfo />
+
   <!-- Testimoni -->
+  <!-- Pass testimonials={testimonials} when Strapi is ready -->
   <Testimonials />
-  
+
   <Footer slot="footer" />
 </BaseLayout>
