@@ -1,12 +1,15 @@
-import { GraphQLClient } from 'graphql-request';
-
 // Configure your Strapi URL here
 const STRAPI_URL = import.meta.env.PUBLIC_STRAPI_URL || 'http://localhost:1337';
-const STRAPI_GRAPHQL_ENDPOINT = `${STRAPI_URL}/graphql`;
+const STRAPI_API_URL = `${STRAPI_URL}/api`;
 
-export const strapiClient = new GraphQLClient(STRAPI_GRAPHQL_ENDPOINT, {
-  headers: {},
-});
+// Helper function to fetch from Strapi REST API
+async function fetchStrapi(endpoint: string) {
+  const response = await fetch(`${STRAPI_API_URL}${endpoint}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${endpoint}: ${response.statusText}`);
+  }
+  return response.json();
+}
 
 // Types for your data
 export interface Hero {
@@ -14,10 +17,7 @@ export interface Hero {
   title: string;
   subtitle: string;
   description?: string;
-  image?: {
-    url: string;
-    alternativeText?: string;
-  };
+  image?: string; // Changed from object to string (URL)
   buttonText?: string;
   buttonLink?: string;
   buttonSecondaryText?: string;
@@ -49,6 +49,28 @@ export interface News {
   };
   publishedAt: string;
   slug: string;
+  category?: string;
+}
+
+export interface Agenda {
+  id: string;
+  title: string;
+  description?: string;
+  eventDate: string;
+  location?: string;
+  category?: string;
+  isHighlighted?: boolean;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  priority?: 'Normal' | 'Penting' | 'Urgent';
+  publishedAt: string;
+  expiryDate?: string;
+  targetAudience?: string;
+  isPinned?: boolean;
 }
 
 export interface Testimonial {
@@ -56,11 +78,18 @@ export interface Testimonial {
   name: string;
   role: string;
   content: string;
-  avatar: {
-    url: string;
-    alternativeText: string;
-  };
+  avatar?: string;
   rating: number;
+}
+
+export interface Leader {
+  id: string;
+  name: string;
+  position: string;
+  photo?: string;
+  description?: string;
+  email?: string;
+  order: number;
 }
 
 export interface Profile {
@@ -69,55 +98,26 @@ export interface Profile {
   history: string;
 }
 
-// Example queries (customize based on your Strapi schema)
+// Fetch Hero Slides from Strapi REST API
 export const getHeroSlides = async (): Promise<Hero[]> => {
-  const query = `
-    query {
-      heroes(sort: "createdAt:asc") {
-        data {
-          id
-          attributes {
-            title
-            subtitle
-            description
-            image {
-              data {
-                attributes {
-                  url
-                  alternativeText
-                  width
-                  height
-                }
-              }
-            }
-            buttonText
-            buttonLink
-            buttonSecondaryText
-            buttonSecondaryLink
-            layout
-          }
-        }
-      }
-    }
-  `;
-
   try {
-    const data: any = await strapiClient.request(query);
-    const heroes = data.heroes?.data?.map((item: any) => {
-      const attrs = item.attributes;
+    const data = await fetchStrapi('/heroes?populate=*&sort=createdAt:asc');
+    
+    const heroes = data.data?.map((item: any) => {
       return {
-        id: item.id,
-        title: attrs.title,
-        subtitle: attrs.subtitle,
-        description: attrs.description,
-        image: attrs.image?.data ? `${STRAPI_URL}${attrs.image.data.attributes.url}` : undefined,
-        buttonText: attrs.buttonText,
-        buttonLink: attrs.buttonLink,
-        buttonSecondaryText: attrs.buttonSecondaryText,
-        buttonSecondaryLink: attrs.buttonSecondaryLink,
-        layout: attrs.layout || 'default'
+        id: item.id.toString(),
+        title: item.title,
+        subtitle: item.subtitle,
+        description: item.description,
+        image: item.image?.url ? `${STRAPI_URL}${item.image.url}` : undefined,
+        buttonText: item.buttonText,
+        buttonLink: item.buttonLink,
+        buttonSecondaryText: item.buttonSecondaryText,
+        buttonSecondaryLink: item.buttonSecondaryLink,
+        layout: item.layout || 'default'
       };
     }) || [];
+    
     return heroes;
   } catch (error) {
     console.error('Error fetching hero slides:', error);
@@ -126,24 +126,9 @@ export const getHeroSlides = async (): Promise<Hero[]> => {
 };
 
 export const getQuickAccess = async (): Promise<QuickAccess[]> => {
-  const query = `
-    query {
-      quickAccesses {
-        data {
-          id
-          attributes {
-            title
-            icon
-            link
-          }
-        }
-      }
-    }
-  `;
-
   try {
-    const data: any = await strapiClient.request(query);
-    return data.quickAccesses?.data || [];
+    const data = await fetchStrapi('/quick-accesses?populate=*');
+    return data.data || [];
   } catch (error) {
     console.error('Error fetching quick access:', error);
     return [];
@@ -151,24 +136,9 @@ export const getQuickAccess = async (): Promise<QuickAccess[]> => {
 };
 
 export const getCampusAdvantages = async (): Promise<CampusAdvantage[]> => {
-  const query = `
-    query {
-      campusAdvantages {
-        data {
-          id
-          attributes {
-            title
-            description
-            icon
-          }
-        }
-      }
-    }
-  `;
-
   try {
-    const data: any = await strapiClient.request(query);
-    return data.campusAdvantages?.data || [];
+    const data = await fetchStrapi('/campus-advantages?populate=*');
+    return data.data || [];
   } catch (error) {
     console.error('Error fetching campus advantages:', error);
     return [];
@@ -176,91 +146,140 @@ export const getCampusAdvantages = async (): Promise<CampusAdvantage[]> => {
 };
 
 export const getNews = async (limit: number = 6): Promise<News[]> => {
-  const query = `
-    query($limit: Int!) {
-      articles(pagination: { limit: $limit }, sort: "publishedAt:desc") {
-        data {
-          id
-          attributes {
-            title
-            excerpt
-            image {
-              data {
-                attributes {
-                  url
-                  alternativeText
-                }
-              }
-            }
-            publishedAt
-            slug
-          }
-        }
-      }
-    }
-  `;
-
   try {
-    const data: any = await strapiClient.request(query, { limit });
-    return data.articles?.data || [];
+    const data = await fetchStrapi(`/articles?populate=*&pagination[limit]=${limit}&sort=publishedAt:desc`);
+    
+    const news = data.data?.map((item: any) => {
+      return {
+        id: item.id.toString(),
+        title: item.title,
+        excerpt: item.excerpt,
+        image: item.image?.url ? `${STRAPI_URL}${item.image.url}` : undefined,
+        publishedAt: item.publishedAt,
+        slug: item.slug,
+        category: item.category
+      };
+    }) || [];
+    
+    return news;
   } catch (error) {
     console.error('Error fetching news:', error);
     return [];
   }
 };
 
-export const getTestimonials = async (): Promise<Testimonial[]> => {
-  const query = `
-    query {
-      testimonials {
-        data {
-          id
-          attributes {
-            name
-            role
-            content
-            avatar {
-              data {
-                attributes {
-                  url
-                  alternativeText
-                }
-              }
-            }
-            rating
-          }
-        }
-      }
-    }
-  `;
-
+export const getAgenda = async (limit: number = 4): Promise<Agenda[]> => {
   try {
-    const data: any = await strapiClient.request(query);
-    return data.testimonials?.data || [];
+    const today = new Date().toISOString();
+    const data = await fetchStrapi(`/events?populate=*&filters[eventDate][$gte]=${today}&sort=eventDate:asc&pagination[limit]=${limit}`);
+    
+    const agenda = data.data?.map((item: any) => {
+      return {
+        id: item.id.toString(),
+        title: item.title,
+        description: item.description,
+        eventDate: item.eventDate,
+        location: item.location,
+        category: item.category,
+        isHighlighted: item.isHighlighted || false
+      };
+    }) || [];
+    
+    return agenda;
+  } catch (error) {
+    console.error('Error fetching agenda:', error);
+    return [];
+  }
+};
+
+export const getAnnouncements = async (limit: number = 5): Promise<Announcement[]> => {
+  try {
+    const today = new Date().toISOString();
+    const data = await fetchStrapi(`/announcements?populate=*&filters[$or][0][expiryDate][$gte]=${today}&filters[$or][1][expiryDate][$null]=true&sort[0]=isPinned:desc&sort[1]=priority:desc&sort[2]=publishedAt:desc&pagination[limit]=${limit}`);
+    
+    const announcements = data.data?.map((item: any) => {
+      return {
+        id: item.id.toString(),
+        title: item.title,
+        content: item.content,
+        priority: item.priority || 'Normal',
+        publishedAt: item.publishedAt,
+        expiryDate: item.expiryDate,
+        targetAudience: item.targetAudience,
+        isPinned: item.isPinned || false
+      };
+    }) || [];
+    
+    return announcements;
+  } catch (error) {
+    console.error('Error fetching announcements:', error);
+    return [];
+  }
+};
+
+export const getTestimonials = async (): Promise<Testimonial[]> => {
+  try {
+    const data = await fetchStrapi('/testimonials?populate=*&sort=createdAt:desc');
+
+    const testimonials = data.data?.map((item: any) => {
+      const attrs = item.attributes || item;
+      // Support multiple possible media shapes
+      const avatarPath = attrs.avatar?.url || attrs.avatar?.data?.attributes?.url || attrs.avatar?.data?.attributes?.formats?.thumbnail?.url;
+      return {
+        id: item.id?.toString() || attrs.id?.toString(),
+        name: attrs.name || attrs.title || 'Anonymous',
+        role: attrs.role || attrs.position || '',
+        content: attrs.content || attrs.message || '',
+        avatar: avatarPath ? `${STRAPI_URL}${avatarPath}` : undefined,
+        rating: Number(attrs.rating || 5),
+      };
+    }) || [];
+
+    return testimonials;
   } catch (error) {
     console.error('Error fetching testimonials:', error);
     return [];
   }
 };
 
-export const getProfile = async (): Promise<Profile | null> => {
-  const query = `
-    query {
-      profile {
-        data {
-          attributes {
-            vision
-            mission
-            history
-          }
-        }
-      }
-    }
-  `;
-
+export const getLeaders = async (): Promise<Leader[]> => {
   try {
-    const data: any = await strapiClient.request(query);
-    return data.profile?.data?.attributes || null;
+    const data = await fetchStrapi('/leaders?populate=*&sort=order:asc');
+
+    const leaders = data.data?.map((item: any) => {
+      const attrs = item.attributes || item;
+      // Support multiple possible photo shapes
+      const photoPath = attrs.photo?.url || attrs.photo?.data?.attributes?.url || attrs.photo?.data?.attributes?.formats?.medium?.url;
+      return {
+        id: item.id?.toString() || attrs.id?.toString(),
+        name: attrs.name || '',
+        position: attrs.position || '',
+        photo: photoPath ? `${STRAPI_URL}${photoPath}` : undefined,
+        description: attrs.description || '',
+        email: attrs.email || '',
+        order: Number(attrs.order || 99),
+      };
+    }) || [];
+
+    return leaders;
+  } catch (error) {
+    console.error('Error fetching leaders:', error);
+    return [];
+  }
+};
+
+export const getProfile = async (): Promise<Profile | null> => {
+  try {
+    const data = await fetchStrapi('/profile?populate=*');
+
+    // Single Type returns data.attributes directly
+    const attrs = data?.data?.attributes || data?.data || {};
+
+    return {
+      vision: attrs.vision || '',
+      mission: attrs.mission || [],
+      history: attrs.history || '',
+    };
   } catch (error) {
     console.error('Error fetching profile:', error);
     return null;

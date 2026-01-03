@@ -12,15 +12,16 @@ import Testimonials from "../components/home/Testimonials.astro";
 // Uncomment these lines when your Strapi backend is ready and running
 // Make sure to set PUBLIC_STRAPI_URL in your .env file
 // import { getHeroSlides, getQuickAccess, getCampusAdvantages, getNews, getAgenda, getAnnouncements, getTestimonials } from '../lib/strapi';
+import { getHeroSlides, getQuickAccess, getNews, getAgenda, getAnnouncements, getTestimonials } from '../lib/strapi';
 
 // Fetch data from Strapi
-// const heroSlides = await getHeroSlides();
-// const quickAccessItems = await getQuickAccess();
+const heroSlides = await getHeroSlides();
+const quickAccessItems = await getQuickAccess();
 // const advantages = await getCampusAdvantages();
-// const news = await getNews(6);
-// const agenda = await getAgenda(4);
-// const announcements = await getAnnouncements(5);
-// const testimonials = await getTestimonials();
+const news = await getNews(6);
+const agenda = await getAgenda(4);
+const announcements = await getAnnouncements(5);
+const testimonials = await getTestimonials();
 
 // Note: Component akan menggunakan data default jika tidak ada data dari Strapi
 ---
@@ -33,11 +34,12 @@ import Testimonials from "../components/home/Testimonials.astro";
 
   <!-- Hero / Slider -->
   <!-- Pass slides={heroSlides} when Strapi is ready -->
-  <HeroSlider />
+  <HeroSlider slides={heroSlides} />
+  <!-- <HeroSlider /> -->
 
   <!-- Quick Access -->
   <!-- Pass items={quickAccessItems} when Strapi is ready -->
-  <QuickAccess />
+  <QuickAccess items={quickAccessItems} />
 
   <!-- Keunggulan Kampus -->
   <!-- Pass advantages={advantages} when Strapi is ready -->
@@ -45,11 +47,11 @@ import Testimonials from "../components/home/Testimonials.astro";
 
   <!-- Informasi Kampus (Berita, Agenda, Pengumuman) -->
   <!-- Pass news={news} agenda={agenda} announcements={announcements} when Strapi is ready -->
-  <CampusInfo />
+  <CampusInfo news={news} agenda={agenda} announcements={announcements} />
 
   <!-- Testimoni -->
   <!-- Pass testimonials={testimonials} when Strapi is ready -->
-  <Testimonials />
+  <Testimonials testimonials={testimonials} />
 
   <Footer slot="footer" />
 </BaseLayout>

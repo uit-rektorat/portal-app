@@ -2,6 +2,28 @@
 
 Panduan lengkap untuk membuat Content Types di Strapi yang terintegrasi dengan Portal UIT.
 
+## 📋 Naming Convention
+
+**Prinsip:** Display Name dalam **Bahasa Indonesia**, API ID dalam **Bahasa Inggris**
+
+| Content Type | Display Name (ID) | API ID Singular | API ID Plural | Endpoint |
+|-------------|------------------|----------------|---------------|----------|
+| Berita | Berita | `article` | `articles` | `/api/articles` |
+| Pengumuman | Pengumuman | `announcement` | `announcements` | `/api/announcements` |
+| Agenda | Agenda | `event` | `events` | `/api/events` |
+| Hero Slider | Hero | `hero` | `heroes` | `/api/heroes` |
+| Akses Cepat | Akses Cepat | `quick-access` | `quick-accesses` | `/api/quick-accesses` |
+| Testimoni | Testimoni | `testimonial` | `testimonials` | `/api/testimonials` |
+| Pimpinan | Pimpinan | `leader` | `leaders` | `/api/leaders` |
+
+**Catatan:**
+- Strapi memerlukan singular ≠ plural untuk API ID
+- Display Name bisa dalam Bahasa Indonesia untuk kemudahan admin
+- API ID dalam Bahasa Inggris untuk konsistensi dengan codebase
+- Endpoint otomatis menggunakan API ID (plural)
+
+---
+
 ## 📋 Content Types yang Dibutuhkan
 
 ### 1. Heroes (Collection Type)
@@ -86,17 +108,128 @@ Fields:
 
 ---
 
-### 4. Articles (Collection Type)
+### 4. Berita / News (Collection Type)
+**Display Name**: Berita  
+**API ID (Singular)**: `article`  
+**API ID (Plural)**: `articles`  
+**Endpoint**: `/api/articles`
+
+Fields:
+- `title` (Text, Required) - Judul berita
+- `excerpt` (Text, Required) - Ringkasan berita (max 200 karakter)
+- `content` (Rich Text, Optional) - Isi lengkap berita dengan formatting
+- `image` (Media - Single Image, Required) - Gambar thumbnail berita
+- `slug` (UID attached to title, Required) - URL-friendly identifier (auto-generate dari title)
+- `category` (Enumeration, Optional) - Kategori berita
+  - Values: `Akademik`, `Kemahasiswaan`, `Prestasi`, `Umum`
+  - Default: `Umum`
+- `publishedAt` (DateTime, Required) - Tanggal publikasi
+- `author` (Text, Optional) - Nama penulis/sumber berita
+
+**Rekomendasi Ukuran Gambar:**
+- 800x600px (ratio 4:3) untuk thumbnail
+- Format: JPG
+- Max size: 300KB
+
+**Permissions**: 
+- Public: `find`, `findOne`
+
+**Contoh Data:**
+```json
+{
+  "title": "Wisuda Angkatan 2025 UIT Dihadiri 500 Lulusan",
+  "excerpt": "Universitas Indonesia Timur menggelar wisuda periode I tahun 2025 dengan total 500 mahasiswa dari berbagai program studi.",
+  "category": "Akademik",
+  "publishedAt": "2025-12-15T09:00:00.000Z",
+  "author": "Humas UIT"
+}
+```
+
+---
+
+### 5. Agenda / Events (Collection Type)
+**Display Name**: Agenda  
+**API ID (Singular)**: `event`  
+**API ID (Plural)**: `events`  
+**Endpoint**: `/api/events`
+
+Fields:
+- `title` (Text, Required) - Judul agenda/event
+- `description` (Text, Optional) - Deskripsi singkat agenda
+- `eventDate` (DateTime, Required) - Tanggal dan waktu event
+- `location` (Text, Optional) - Lokasi event (e.g., "Auditorium Kampus A")
+- `category` (Enumeration, Optional) - Kategori agenda
+  - Values: `Akademik`, `Seminar`, `Workshop`, `Lomba`, `Umum`
+  - Default: `Umum`
+- `isHighlighted` (Boolean, Optional) - Tandai agenda penting (akan ditampilkan prominent)
+  - Default: false
+
+**Permissions**: 
+- Public: `find`, `findOne`
+
+**Contoh Data:**
+```json
+{
+  "title": "Seminar Nasional Teknologi dan Inovasi",
+  "description": "Seminar dengan tema 'AI dalam Pendidikan' menghadirkan pembicara nasional",
+  "eventDate": "2026-02-10T13:00:00.000Z",
+  "location": "Auditorium Utama UIT",
+  "category": "Seminar",
+  "isHighlighted": true
+}
+```
+
+---
+
+### 6. Pengumuman / Announcements (Collection Type)
+**Display Name**: Pengumuman  
+**API ID (Singular)**: `announcement`  
+**API ID (Plural)**: `announcements`  
+**Endpoint**: `/api/announcements`
+
+Fields:
+- `title` (Text, Required) - Judul pengumuman
+- `content` (Rich Text, Required) - Isi pengumuman lengkap
+- `priority` (Enumeration, Optional) - Tingkat prioritas pengumuman
+  - Values: `Normal`, `Penting`, `Urgent`
+  - Default: `Normal`
+- `publishedAt` (DateTime, Required) - Tanggal publikasi
+- `expiryDate` (DateTime, Optional) - Tanggal kedaluwarsa (pengumuman tidak ditampilkan setelah tanggal ini)
+- `targetAudience` (Enumeration, Optional) - Target pengumuman
+  - Values: `Semua`, `Mahasiswa`, `Dosen`, `Staff`, `Calon Mahasiswa`
+  - Default: `Semua`
+- `isPinned` (Boolean, Optional) - Pin pengumuman di atas (selalu tampil paling atas)
+  - Default: false
+
+**Permissions**: 
+- Public: `find`, `findOne`
+
+**Contoh Data:**
+```json
+{
+  "title": "Pendaftaran Beasiswa Prestasi Semester Genap 2025/2026",
+  "content": "<p>Dibuka pendaftaran beasiswa prestasi untuk mahasiswa...</p>",
+  "priority": "Penting",
+  "publishedAt": "2026-01-15T08:00:00.000Z",
+  "expiryDate": "2026-02-28T23:59:59.000Z",
+  "targetAudience": "Mahasiswa",
+  "isPinned": true
+}
+```
+
+---
+
+### 7. Articles (Collection Type) - Optional
 **API ID**: `article`
 
 Fields:
-- `title` (Text, Required) - Judul artikel/berita
+- `title` (Text, Required) - Judul artikel
 - `excerpt` (Text, Required) - Ringkasan artikel
 - `content` (Rich Text, Optional) - Isi lengkap artikel
 - `image` (Media - Single Image, Optional) - Gambar artikel
 - `slug` (UID attached to title, Required) - URL-friendly identifier
 - `category` (Enumeration, Optional) - Kategori artikel
-  - Values: `Pengumuman`, `Kegiatan`, `Prestasi`, `Berita`
+  - Values: `Opini`, `Feature`, `Liputan`, `Tutorial`
 - `publishedAt` (DateTime, Required) - Tanggal publikasi
 
 **Permissions**: 
@@ -104,8 +237,11 @@ Fields:
 
 ---
 
-### 5. Testimonials (Collection Type)
-**API ID**: `testimonial`
+### 8. Testimonials (Collection Type)
+**Display Name**: Testimoni  
+**API ID (Singular)**: `testimonial`  
+**API ID (Plural)**: `testimonials`  
+**Endpoint**: `/api/testimonials`
 
 Fields:
 - `name` (Text, Required) - Nama pemberi testimoni
@@ -115,12 +251,64 @@ Fields:
 - `rating` (Number - Integer, Required) - Rating 1-5
   - Min: 1, Max: 5
 
+**Rekomendasi Ukuran Avatar:**
+- 400x400px (square/1:1)
+- Format: JPG atau PNG
+- Max size: 100KB
+
 **Permissions**: 
 - Public: `find`, `findOne`
 
+**Contoh Data:**
+```json
+{
+  "name": "Ahmad Fauzi",
+  "role": "Alumni Teknik Informatika 2023",
+  "content": "UIT memberikan pengalaman belajar yang luar biasa...",
+  "rating": 5
+}
+```
+
 ---
 
-### 6. Profile (Single Type)
+### 9. Leaders / Pimpinan (Collection Type)
+**Display Name**: Pimpinan  
+**API ID (Singular)**: `leader`  
+**API ID (Plural)**: `leaders`  
+**Endpoint**: `/api/leaders`
+
+Fields:
+- `name` (Text, Required) - Nama lengkap pimpinan (dengan gelar)
+- `position` (Enumeration, Required) - Jabatan
+  - Values: `Rektor`, `Wakil Rektor I (Bidang Akademik)`, `Wakil Rektor II (Bidang Keuangan)`, `Wakil Rektor III (Bidang Kemahasiswaan)`, `Wakil Rektor IV (Bidang Kerjasama)`
+- `photo` (Media - Single Image, Optional) - Foto pimpinan
+- `description` (Text, Optional) - Deskripsi singkat/bio
+- `email` (Email, Optional) - Email kontak
+- `order` (Number - Integer, Required) - Urutan tampilan (1 untuk Rektor, 2-5 untuk Wakil Rektor)
+  - Min: 1, Max: 10
+
+**Rekomendasi Ukuran Foto:**
+- 800x800px (square/1:1)
+- Format: JPG
+- Max size: 300KB
+
+**Permissions**: 
+- Public: `find`, `findOne`
+
+**Contoh Data:**
+```json
+{
+  "name": "Prof. Dr. Ahmad Sutanto, M.Si.",
+  "position": "Rektor",
+  "description": "Memimpin universitas dengan visi dan komitmen untuk menghasilkan lulusan berkualitas",
+  "email": "rektor@uit.ac.id",
+  "order": 1
+}
+```
+
+---
+
+### 10. Profile (Single Type)
 **API ID**: `profile`
 
 Fields:
@@ -151,10 +339,11 @@ Fields:
 - **Max Size**: 500KB per file
 - **Quality**: 80-85% compression
 
-#### 2. News/Article Images
+#### 2. News Images
 - **Recommended**: 800x600px (ratio 4:3)
-- **Format**: JPG atau PNG
+- **Format**: JPG
 - **Max Size**: 300KB per file
+- **Usage**: Thumbnail untuk card berita
 
 #### 3. Testimonial Avatar
 - **Recommended**: 400x400px (square/1:1)
@@ -301,7 +490,178 @@ GraphQL Playground akan tersedia di:
 
 ---
 
-## 📝 Contoh Query GraphQL
+## 📝 Contoh REST API Endpoints
+
+### Get Heroes
+```
+GET http://localhost:1337/api/heroes?populate=*&sort=createdAt:asc
+```
+
+Response:
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Selamat Datang di UIT",
+      "subtitle": "Universitas Indonesia Timur",
+      "description": "Membangun Generasi Unggul",
+      "layout": "centered",
+      "image": {
+        "url": "/uploads/hero_1.jpg"
+      }
+    }
+  ]
+}
+```
+
+### Get News / Berita (with limit and sort)
+```
+GET http://localhost:1337/api/articles?populate=*&pagination[limit]=6&sort=publishedAt:desc
+```
+
+Response:
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Wisuda Angkatan 2025",
+      "excerpt": "UIT menggelar wisuda...",
+      "category": "Akademik",
+      "publishedAt": "2025-12-15T09:00:00.000Z",
+      "image": {
+        "url": "/uploads/news_1.jpg"
+      }
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 6,
+      "pageCount": 1,
+      "total": 6
+    }
+  }
+}
+```
+
+### Get Agenda / Events (upcoming events)
+```
+GET http://localhost:1337/api/events?populate=*&filters[eventDate][$gte]=${todayDate}&sort=eventDate:asc&pagination[limit]=4
+```
+
+Response:
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Seminar Nasional",
+      "description": "AI dalam Pendidikan",
+      "eventDate": "2026-02-10T13:00:00.000Z",
+      "location": "Auditorium Utama",
+      "category": "Seminar",
+      "isHighlighted": true
+    }
+  ]
+}
+```
+
+### Get Pengumuman / Announcements (active & sorted by priority)
+```
+GET http://localhost:1337/api/announcements?populate=*&filters[expiryDate][$gte]=${todayDate}&sort[0]=isPinned:desc&sort[1]=priority:desc&sort[2]=publishedAt:desc&pagination[limit]=5
+```
+
+Response:
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Pendaftaran Beasiswa",
+      "content": "<p>Dibuka pendaftaran...</p>",
+      "priority": "Penting",
+      "isPinned": true,
+      "publishedAt": "2026-01-15T08:00:00.000Z",
+      "expiryDate": "2026-02-28T23:59:59.000Z",
+      "targetAudience": "Mahasiswa"
+    }
+  ]
+}
+```
+### Get Testimonials
+```
+GET http://localhost:1337/api/testimonials?populate=*&sort=createdAt:desc
+```
+
+Response:
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Ahmad Fauzi",
+      "role": "Alumni Teknik Informatika 2023",
+      "content": "UIT memberikan pengalaman belajar yang luar biasa...",
+      "rating": 5,
+      "avatar": {
+        "url": "/uploads/avatar_1.jpg"
+      }
+    }
+  ]
+}
+```
+
+### Get Leaders / Pimpinan (sorted by order)
+```
+GET http://localhost:1337/api/leaders?populate=*&sort=order:asc
+```
+
+Response:
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Prof. Dr. Ahmad Sutanto, M.Si.",
+      "position": "Rektor",
+      "description": "Memimpin universitas...",
+      "email": "rektor@uit.ac.id",
+      "order": 1,
+      "photo": {
+        "url": "/uploads/rektor.jpg"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Dr. Siti Aminah, M.Pd.",
+      "position": "Wakil Rektor I (Bidang Akademik)",
+      "order": 2
+    }
+  ]
+}
+```
+### Get Profile (Single Type)
+```
+GET http://localhost:1337/api/profile?populate=*
+```
+
+Response:
+```json
+{
+  "data": {
+    "id": 1,
+    "vision": "Menjadi universitas unggul...",
+    "mission": ["Misi 1", "Misi 2", "Misi 3"],
+    "history": "Universitas Indonesia Timur didirikan..."
+  }
+}
+```
+
+---
+
+## 📝 Contoh Query GraphQL (Optional - jika menggunakan GraphQL)
 
 ### Get Heroes
 ```graphql
@@ -390,11 +750,22 @@ query {
    
    Di `src/pages/index.astro`:
    ```typescript
-   import { getHeroSlides, getQuickAccess, getCampusAdvantages, getNews, getTestimonials } from '../lib/strapi';
+   import { 
+     getHeroSlides, 
+     getQuickAccess, 
+     getCampusAdvantages, 
+     getNews, 
+     getAgenda,
+     getAnnouncements,
+     getTestimonials 
+   } from '../lib/strapi';
+   
    const heroSlides = await getHeroSlides();
    const quickAccessItems = await getQuickAccess();
    const advantages = await getCampusAdvantages();
    const news = await getNews(6);
+   const agenda = await getAgenda(4);
+   const announcements = await getAnnouncements(5);
    const testimonials = await getTestimonials();
    ```
 
@@ -403,7 +774,7 @@ query {
    <HeroSlider slides={heroSlides} />
    <QuickAccess items={quickAccessItems} />
    <CampusAdvantages advantages={advantages} />
-   <NewsSection news={news} />
+   <CampusInfo news={news} agenda={agenda} announcements={announcements} />
    <Testimonials testimonials={testimonials} />
    ```
 
@@ -411,7 +782,12 @@ query {
 
 ## 🐛 Troubleshooting
 
-### Error: GraphQL endpoint not found
+### Error: REST API endpoint not found (404)
+- Pastikan Content Type sudah dibuat dengan API ID yang benar
+- Cek di Content-Type Builder apakah API ID sesuai (plural/singular)
+- Restart Strapi server setelah membuat Content Type baru
+
+### Error: GraphQL endpoint not found (jika pakai GraphQL)
 - Pastikan GraphQL plugin sudah terinstall
 - Restart Strapi server
 
@@ -422,6 +798,12 @@ query {
 ### Error: Cannot read property 'data'
 - Pastikan sudah ada data di Strapi
 - Publish entry yang sudah dibuat
+- Cek response API di browser: `http://localhost:1337/api/heroes`
+
+### Error: Image tidak muncul
+- Pastikan image sudah di-populate: tambahkan `?populate=*` di URL
+- Cek path image: harus `STRAPI_URL + image.url`
+- Contoh: `http://localhost:1337/uploads/image_123.jpg`
 
 ### CORS Error
 - Tambahkan config di `config/middlewares.js`:
@@ -429,19 +811,35 @@ query {
   {
     name: 'strapi::cors',
     config: {
-      origin: ['http://localhost:4321'],
+      origin: ['http://localhost:4321', 'http://localhost:3000'],
     },
   }
   ```
+
+### Data tidak muncul di frontend (return empty array)
+- Cek browser console untuk error
+- Test API endpoint langsung di browser atau Postman
+- Pastikan Strapi server berjalan di port 1337
+- Verify PUBLIC_STRAPI_URL di file `.env`
+- Cek permissions: Public role harus punya akses `find` dan `findOne`
 
 ---
 
 ## 📚 Resources
 
 - [Strapi Documentation](https://docs.strapi.io/)
-- [Strapi GraphQL Plugin](https://docs.strapi.io/dev-docs/plugins/graphql)
-- [GraphQL Request Documentation](https://github.com/jasonkuhrt/graphql-request)
+- [Strapi REST API Documentation](https://docs.strapi.io/dev-docs/api/rest)
+- [Strapi GraphQL Plugin](https://docs.strapi.io/dev-docs/plugins/graphql) (Optional)
+- [Strapi Filters & Sorting](https://docs.strapi.io/dev-docs/api/rest/filters-locale-publication)
+- [Strapi Population Guide](https://docs.strapi.io/dev-docs/api/rest/populate-select)
 
 ---
 
-**Catatan**: Sesuaikan structure dan fields berdasarkan kebutuhan spesifik UIT. File ini adalah panduan awal yang dapat dikustomisasi.
+**Catatan Penting**: 
+- Dokumentasi ini menggunakan **REST API** sebagai default (lebih simple dan praktis)
+- GraphQL bersifat optional dan bisa diaktifkan jika diperlukan
+- Sesuaikan structure dan fields berdasarkan kebutuhan spesifik UIT
+- Pastikan selalu test endpoint setelah membuat Content Type baru
+
+**Last Updated**: January 2026  
+**API Version**: Strapi v4+ (REST API)

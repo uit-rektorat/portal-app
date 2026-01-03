@@ -6,35 +6,52 @@
  */
 
 interface NewsItem {
-    id: number;
+    id: number | string;
     title: string;
     excerpt: string;
-    image: string;
-    date: string;
-    category: string;
+    image?: string;
+    date?: string;
+    publishedAt?: string;
+    category?: string;
     slug: string;
 }
 
 interface AgendaItem {
-    id: number;
+    id: number | string;
     title: string;
-    date: string;
-    time: string;
-    location: string;
-    description: string;
+    date?: string;
+    eventDate?: string;
+    time?: string;
+    location?: string;
+    description?: string;
+    category?: string;
+    isHighlighted?: boolean;
 }
 
 interface AnnouncementItem {
-    id: number;
+    id: number | string;
     title: string;
-    date: string;
-    excerpt: string;
-    priority: "high" | "normal";
-    slug: string;
+    date?: string;
+    publishedAt?: string;
+    excerpt?: string;
+    content?: string;
+    priority?: "high" | "normal" | "Penting" | "Normal" | "Urgent";
+    slug?: string;
+    isPinned?: boolean;
+    expiryDate?: string;
+    targetAudience?: string;
 }
 
+interface Props {
+    news?: NewsItem[];
+    agenda?: AgendaItem[];
+    announcements?: AnnouncementItem[];
+}
+
+const { news = [], agenda = [], announcements = [] } = Astro.props;
+
 // Sample data - will be replaced with Strapi CMS data
-const newsItems: NewsItem[] = [
+const defaultNewsItems: NewsItem[] = [
     {
         id: 1,
         title: "UIT Raih Akreditasi A dari BAN-PT",
@@ -97,7 +114,7 @@ const newsItems: NewsItem[] = [
     },
 ];
 
-const agendaItems: AgendaItem[] = [
+const defaultAgendaItems: AgendaItem[] = [
     {
         id: 1,
         title: "Wisuda Periode 1 Tahun 2026",
@@ -135,7 +152,7 @@ const agendaItems: AgendaItem[] = [
     },
 ];
 
-const announcements: AnnouncementItem[] = [
+const defaultAnnouncements: AnnouncementItem[] = [
     {
         id: 1,
         title: "Perpanjangan Batas Waktu Pembayaran UKT",
@@ -183,6 +200,11 @@ const announcements: AnnouncementItem[] = [
     },
 ];
 
+// Use Strapi data if available, otherwise use default data
+const newsItems: NewsItem[] = news.length > 0 ? news : defaultNewsItems;
+const agendaItems: AgendaItem[] = agenda.length > 0 ? agenda : defaultAgendaItems;
+const announcementItems: AnnouncementItem[] = announcements.length > 0 ? announcements : defaultAnnouncements;
+
 // Format date helper
 function formatDate(dateString: string): string {
     const date = new Date(dateString);
@@ -196,7 +218,7 @@ function formatDate(dateString: string): string {
 ---
 
 <section class="campus-info-section">
-    <div class="container">
+    <div class="container mx-auto px-4">
         <div class="section-header">
             <h2 class="section-title">Informasi Kampus</h2>
             <p class="section-subtitle">
@@ -303,19 +325,29 @@ function formatDate(dateString: string): string {
                                     newsItems.map((news) => (
                                         <article class="news-card">
                                             <div class="news-image-wrapper">
-                                                <img
-                                                    src={news.image}
-                                                    alt={news.title}
-                                                    class="news-image"
-                                                    loading="lazy"
-                                                />
-                                                <span class="news-category">
-                                                    {news.category}
-                                                </span>
+                                                {news.image ? (
+                                                    <img
+                                                        src={news.image}
+                                                        alt={news.title}
+                                                        class="news-image"
+                                                        loading="lazy"
+                                                    />
+                                                ) : (
+                                                    <div class="news-image-placeholder">
+                                                        <svg class="w-16 h-16 text-uit-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                                                        </svg>
+                                                    </div>
+                                                )}
+                                                {news.category && (
+                                                    <span class="news-category">
+                                                        {news.category}
+                                                    </span>
+                                                )}
                                             </div>
                                             <div class="news-content">
                                                 <time class="news-date">
-                                                    {formatDate(news.date)}
+                                                    {formatDate(news.publishedAt || news.date || '')}
                                                 </time>
                                                 <h3 class="news-title">
                                                     {news.title}
@@ -386,15 +418,17 @@ function formatDate(dateString: string): string {
                 <div class="tab-content" data-content="agenda">
                     <div class="agenda-list">
                         {
-                            agendaItems.map((agenda) => (
+                            agendaItems.map((agenda) => {
+                                const agendaDate = agenda.eventDate || agenda.date || '';
+                                return (
                                 <article class="agenda-card">
                                     <div class="agenda-date-badge">
                                         <span class="agenda-day">
-                                            {new Date(agenda.date).getDate()}
+                                            {new Date(agendaDate).getDate()}
                                         </span>
                                         <span class="agenda-month">
                                             {new Date(
-                                                agenda.date,
+                                                agendaDate,
                                             ).toLocaleDateString("id-ID", {
                                                 month: "short",
                                             })}
@@ -403,8 +437,12 @@ function formatDate(dateString: string): string {
                                     <div class="agenda-content">
                                         <h3 class="agenda-title">
                                             {agenda.title}
+                                            {agenda.isHighlighted && (
+                                                <span class="agenda-badge-highlight">Penting</span>
+                                            )}
                                         </h3>
                                         <div class="agenda-meta">
+                                            {agenda.time && (
                                             <div class="agenda-meta-item">
                                                 <svg
                                                     fill="none"
@@ -420,6 +458,8 @@ function formatDate(dateString: string): string {
                                                 </svg>
                                                 <span>{agenda.time}</span>
                                             </div>
+                                            )}
+                                            {agenda.location && (
                                             <div class="agenda-meta-item">
                                                 <svg
                                                     fill="none"
@@ -441,13 +481,17 @@ function formatDate(dateString: string): string {
                                                 </svg>
                                                 <span>{agenda.location}</span>
                                             </div>
+                                            )}
                                         </div>
+                                        {agenda.description && (
                                         <p class="agenda-description">
                                             {agenda.description}
                                         </p>
+                                        )}
                                     </div>
                                 </article>
-                            ))
+                                );
+                            })
                         }
                     </div>
                 </div>
@@ -456,12 +500,14 @@ function formatDate(dateString: string): string {
                 <div class="tab-content" data-content="pengumuman">
                     <div class="announcements-list">
                         {
-                            announcements.map((announcement) => (
+                            announcementItems.map((announcement) => {
+                                const isPriorityHigh = announcement.priority === "high" || announcement.priority === "Penting" || announcement.priority === "Urgent";
+                                return (
                                 <article
-                                    class={`announcement-card ${announcement.priority === "high" ? "priority-high" : ""}`}
+                                    class={`announcement-card ${isPriorityHigh ? "priority-high" : ""}`}
                                 >
                                     <div class="announcement-header">
-                                        {announcement.priority === "high" && (
+                                        {isPriorityHigh && (
                                             <span class="priority-badge">
                                                 <svg
                                                     fill="currentColor"
@@ -473,19 +519,23 @@ function formatDate(dateString: string): string {
                                                         clip-rule="evenodd"
                                                     />
                                                 </svg>
-                                                Penting
+                                                {announcement.priority || 'Penting'}
                                             </span>
                                         )}
                                         <time class="announcement-date">
-                                            {formatDate(announcement.date)}
+                                            {formatDate(announcement.publishedAt || announcement.date || '')}
                                         </time>
                                     </div>
                                     <h3 class="announcement-title">
+                                        {announcement.isPinned && (
+                                            <span class="pinned-icon" title="Disematkan">📌 </span>
+                                        )}
                                         {announcement.title}
                                     </h3>
                                     <p class="announcement-excerpt">
-                                        {announcement.excerpt}
+                                        {announcement.excerpt || announcement.content?.substring(0, 150) + '...'}
                                     </p>
+                                    {announcement.slug && (
                                     <a
                                         href={`/announcements/${announcement.slug}`}
                                         class="announcement-link"
@@ -504,8 +554,10 @@ function formatDate(dateString: string): string {
                                             />
                                         </svg>
                                     </a>
+                                    )}
                                 </article>
-                            ))
+                                );
+                            })
                         }
                     </div>
                 </div>
@@ -518,12 +570,6 @@ function formatDate(dateString: string): string {
     .campus-info-section {
         padding: 80px 0;
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    }
-
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
     }
 
     .section-header {
@@ -601,7 +647,7 @@ function formatDate(dateString: string): string {
 
     /* Tab Content */
     .tab-content-wrapper {
-        padding: 40px;
+        padding: 32px;
     }
 
     .tab-content {
@@ -688,7 +734,7 @@ function formatDate(dateString: string): string {
     }
 
     .news-card {
-        flex: 0 0 calc(33.333% - 16px);
+        flex: 0 0 calc((100% - 48px) / 3);
         background: white;
         border-radius: 12px;
         overflow: hidden;
@@ -703,8 +749,9 @@ function formatDate(dateString: string): string {
 
     .news-image-wrapper {
         position: relative;
-        height: 200px;
+        height: 240px;
         overflow: hidden;
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
     }
 
     .news-image {
@@ -712,6 +759,14 @@ function formatDate(dateString: string): string {
         height: 100%;
         object-fit: cover;
         transition: transform 0.3s ease;
+    }
+
+    .news-image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .news-card:hover .news-image {
@@ -895,6 +950,19 @@ function formatDate(dateString: string): string {
         font-weight: 700;
         color: #1a1a2e;
         margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .agenda-badge-highlight {
+        display: inline-block;
+        background: #ff9800;
+        color: white;
+        font-size: 0.7rem;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-weight: 600;
     }
 
     .agenda-meta {
@@ -983,6 +1051,14 @@ function formatDate(dateString: string): string {
         color: #1a1a2e;
         margin-bottom: 12px;
         line-height: 1.4;
+        display: flex;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .pinned-icon {
+        font-size: 0.9rem;
+        flex-shrink: 0;
     }
 
     .announcement-excerpt {
@@ -1021,6 +1097,9 @@ function formatDate(dateString: string): string {
         .news-card {
             flex: 0 0 calc(50% - 12px);
         }
+        .news-image-wrapper {
+            height: 200px;
+        }
     }
 
     @media (max-width: 768px) {
@@ -1046,6 +1125,9 @@ function formatDate(dateString: string): string {
 
         .news-card {
             flex: 0 0 100%;
+        }
+        .news-image-wrapper {
+            height: 180px;
         }
 
         .carousel-button {
@@ -1112,26 +1194,47 @@ function formatDate(dateString: string): string {
     const nextButton = document.querySelector(
         ".carousel-button.next",
     ) as HTMLElement | null;
-    const indicators = document.querySelectorAll(
+    let indicators = document.querySelectorAll(
         ".indicator",
     ) as NodeListOf<HTMLElement>;
 
     let currentIndex = 0;
-    const itemsPerSlide = 3;
-    const totalItems = 6;
-    const totalSlides = Math.ceil(totalItems / itemsPerSlide);
+
+    function getItemsPerSlide() {
+        const w = window.innerWidth;
+        if (w <= 480) return 1; // mobile
+        if (w <= 1024) return 2; // tablet
+        return 3; // desktop
+    }
+
+    function getTotalItems() {
+        return track ? track.querySelectorAll('.news-card').length : 0;
+    }
+
+    function getTotalSlides() {
+        const itemsPerSlide = getItemsPerSlide();
+        const totalItems = getTotalItems();
+        return Math.max(1, Math.ceil(totalItems / itemsPerSlide));
+    }
 
     function updateCarousel() {
         if (track) {
+            const itemsPerSlide = getItemsPerSlide();
             const cardElement = track.querySelector(
                 ".news-card",
             ) as HTMLElement | null;
             const cardWidth = cardElement?.offsetWidth || 0;
             const gap = 24;
             const offset =
-                currentIndex *
-                (cardWidth * itemsPerSlide + gap * itemsPerSlide);
+                currentIndex * (cardWidth * itemsPerSlide + gap * (itemsPerSlide - 1));
             track.style.transform = `translateX(-${offset}px)`;
+
+            // Refresh indicators in case DOM changed
+            indicators = document.querySelectorAll('.indicator') as NodeListOf<HTMLElement>;
+
+            // Clamp currentIndex
+            const totalSlides = getTotalSlides();
+            if (currentIndex >= totalSlides) currentIndex = Math.max(0, totalSlides - 1);
 
             // Update indicators
             indicators.forEach((indicator, index) => {
@@ -1142,6 +1245,7 @@ function formatDate(dateString: string): string {
 
     if (prevButton) {
         prevButton.addEventListener("click", () => {
+            const totalSlides = getTotalSlides();
             currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
             updateCarousel();
         });
@@ -1149,6 +1253,7 @@ function formatDate(dateString: string): string {
 
     if (nextButton) {
         nextButton.addEventListener("click", () => {
+            const totalSlides = getTotalSlides();
             currentIndex = (currentIndex + 1) % totalSlides;
             updateCarousel();
         });
@@ -1163,6 +1268,7 @@ function formatDate(dateString: string): string {
 
     // Auto-play carousel
     let autoplayInterval = setInterval(() => {
+        const totalSlides = getTotalSlides();
         currentIndex = (currentIndex + 1) % totalSlides;
         updateCarousel();
     }, 5000);
@@ -1176,6 +1282,7 @@ function formatDate(dateString: string): string {
 
         carouselWrapper.addEventListener("mouseleave", () => {
             autoplayInterval = setInterval(() => {
+                const totalSlides = getTotalSlides();
                 currentIndex = (currentIndex + 1) % totalSlides;
                 updateCarousel();
             }, 5000);

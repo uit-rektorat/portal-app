@@ -3,29 +3,35 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 
-// Uncomment when Strapi backend is ready
-// import { getProfile } from '../lib/strapi';
-// const profile = await getProfile();
+// Import Strapi functions (we call them after defaults to avoid TDZ)
+import { getProfile, getLeaders } from '../lib/strapi';
 
 // Default data
-const profile = {
-  vision:
-    "Menjadi universitas unggulan yang menghasilkan lulusan berkarakter, kompeten, dan berdaya saing global pada tahun 2030.",
-  mission: [
-    "Menyelenggarakan pendidikan tinggi yang berkualitas dan berorientasi pada kebutuhan masyarakat dan industri",
-    "Mengembangkan penelitian dan pengabdian kepada masyarakat yang inovatif dan bermanfaat",
-    "Membangun budaya akademik yang kondusif untuk pengembangan ilmu pengetahuan dan teknologi",
-    "Menghasilkan lulusan yang berkarakter, kompeten, dan memiliki jiwa kewirausahaan",
-    "Menjalin kemitraan strategis dengan berbagai institusi dalam dan luar negeri",
-  ],
-  history: `Universitas Indonesia Timur (UIT) didirikan pada tahun 1995 dengan visi untuk menjadi pusat pendidikan tinggi yang unggul di Indonesia Timur. Berawal dari sebuah yayasan pendidikan yang memiliki komitmen kuat terhadap peningkatan kualitas sumber daya manusia, UIT telah berkembang menjadi salah satu universitas terkemuka di wilayah Sulawesi Selatan.
-
-Dalam perjalanannya, UIT terus berinovasi dan beradaptasi dengan perkembangan zaman. Dimulai dengan tiga program studi pada tahun pertama, kini UIT memiliki lebih dari 15 program studi yang tersebar di berbagai fakultas. Setiap program studi dirancang untuk memenuhi kebutuhan industri dan masyarakat, dengan kurikulum yang selalu diperbarui sesuai dengan perkembangan ilmu pengetahuan dan teknologi.
-
-UIT juga aktif dalam kegiatan penelitian dan pengabdian kepada masyarakat. Berbagai penelitian yang dilakukan oleh dosen dan mahasiswa telah memberikan kontribusi nyata bagi pengembangan ilmu pengetahuan dan solusi terhadap permasalahan yang dihadapi masyarakat. Kerja sama dengan berbagai institusi pendidikan dan industri, baik di dalam maupun luar negeri, semakin memperkuat posisi UIT sebagai universitas yang berkomitmen pada kualitas dan relevansi pendidikan.
-
-Dengan fasilitas modern, dosen berkualitas, dan lingkungan akademik yang kondusif, UIT terus berupaya mewujudkan visinya untuk menjadi universitas unggulan yang menghasilkan lulusan berkarakter, kompeten, dan berdaya saing global.`,
+const defaultProfile = {
+  vision: '',
+  mission: [],
+  history: '',
 };
+
+// `profile` will be set from Strapi after defaults are declared
+
+interface Leader {
+  id: string;
+  name: string;
+  position: string;
+  photo?: string;
+  description?: string;
+  email?: string;
+  order: number;
+}
+
+const defaultLeaders: Leader[] = [];
+
+// Fetch profile and leaders from Strapi (use defaults when empty)
+const profileData = await getProfile();
+const leadersData = await getLeaders();
+const profile = profileData || defaultProfile;
+const leaders = leadersData.length > 0 ? leadersData : defaultLeaders;
 ---
 
 <BaseLayout
@@ -36,110 +42,37 @@ Dengan fasilitas modern, dosen berkualitas, dan lingkungan akademik yang kondusi
 
   <!-- Page Header -->
   <section
-    class="bg-gradient-to-r from-uit-green-dark to-uit-green text-white py-16 md:py-20"
+    class="relative bg-gradient-to-br from-uit-green-dark via-uit-green to-uit-green-light text-white py-20 md:py-28 overflow-hidden"
   >
-    <div class="container mx-auto px-4">
+    <!-- Decorative Elements -->
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute top-10 right-10 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+      <div class="absolute bottom-10 left-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+    </div>
+    
+    <div class="container mx-auto px-4 relative z-10">
       <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-4xl md:text-5xl font-bold mb-4">Profil UIT</h1>
-        <p class="text-xl text-white/90">
-          Membangun Generasi Unggul dan Berkarakter
+        <div class="inline-block mb-6 px-6 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
+          Tentang Kami
+        </div>
+        <h1 class="text-4xl md:text-6xl font-bold mb-6">Profil Universitas Indonesia Timur</h1>
+        <p class="text-xl md:text-2xl text-white/90 leading-relaxed">
+          Membangun Generasi Unggul dan Berkarakter untuk Indonesia yang Lebih Baik
         </p>
       </div>
     </div>
   </section>
 
-  <!-- Visi -->
-  <section class="py-16 md:py-20 bg-white">
+  <!-- Sejarah Section -->
+  <section class="py-16 md:py-24 bg-white">
     <div class="container mx-auto px-4">
-      <div class="max-w-4xl mx-auto">
-        <div class="flex items-start mb-8">
+      <div class="max-w-5xl mx-auto">
+        <div class="flex items-center justify-center mb-12">
           <div
-            class="w-16 h-16 bg-gradient-to-br from-uit-green to-uit-green-light rounded-xl flex items-center justify-center flex-shrink-0 mr-6"
+            class="w-20 h-20 bg-gradient-to-br from-uit-green-dark to-uit-green rounded-2xl flex items-center justify-center shadow-lg"
           >
             <svg
-              class="w-8 h-8 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-              ></path>
-            </svg>
-          </div>
-          <div>
-            <h2 class="text-3xl font-bold text-gray-900 mb-4">Visi</h2>
-            <p class="text-lg text-gray-700 leading-relaxed">
-              {profile.vision}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Misi -->
-  <section class="py-16 md:py-20 bg-uit-bg">
-    <div class="container mx-auto px-4">
-      <div class="max-w-4xl mx-auto">
-        <div class="flex items-start mb-8">
-          <div
-            class="w-16 h-16 bg-gradient-to-br from-uit-green-light to-uit-green rounded-xl flex items-center justify-center flex-shrink-0 mr-6"
-          >
-            <svg
-              class="w-8 h-8 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-              ></path>
-            </svg>
-          </div>
-          <div class="flex-1">
-            <h2 class="text-3xl font-bold text-gray-900 mb-6">Misi</h2>
-            <ul class="space-y-4">
-              {
-                profile.mission.map((item, index) => (
-                  <li class="flex items-start">
-                    <span class="flex-shrink-0 w-8 h-8 bg-uit-green/10 text-uit-green-dark rounded-full flex items-center justify-center font-bold mr-4 mt-1">
-                      {index + 1}
-                    </span>
-                    <p class="text-lg text-gray-700 leading-relaxed flex-1">
-                      {item}
-                    </p>
-                  </li>
-                ))
-              }
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Sejarah -->
-  <section class="py-16 md:py-20 bg-white">
-    <div class="container mx-auto px-4">
-      <div class="max-w-4xl mx-auto">
-        <div class="flex items-start mb-8">
-          <div
-            class="w-16 h-16 bg-gradient-to-br from-uit-green-dark to-uit-green rounded-xl flex items-center justify-center flex-shrink-0 mr-6"
-          >
-            <svg
-              class="w-8 h-8 text-white"
+              class="w-10 h-10 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -152,20 +85,200 @@ Dengan fasilitas modern, dosen berkualitas, dan lingkungan akademik yang kondusi
               ></path>
             </svg>
           </div>
-          <div>
-            <h2 class="text-3xl font-bold text-gray-900 mb-6">Sejarah</h2>
-            <div class="prose prose-lg max-w-none">
+        </div>
+        
+        <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-8 text-center">Sejarah</h2>
+        
+        <div class="prose prose-lg max-w-none">
+          {
+            profile.history
+              .split("\n\n")
+              .map((paragraph) => (
+                <p class="text-gray-700 leading-relaxed mb-6 text-lg">
+                  {paragraph}
+                </p>
+              ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Visi Misi Section -->
+  <section class="py-16 md:py-24 bg-gradient-to-br from-uit-bg to-white">
+    <div class="container mx-auto px-4">
+      <div class="max-w-6xl mx-auto">
+        <div class="grid md:grid-cols-2 gap-8 md:gap-12">
+          <!-- Visi -->
+          <div class="bg-white rounded-2xl shadow-xl p-8 md:p-10 hover:shadow-2xl transition-shadow">
+            <div class="flex items-center mb-6">
+              <div
+                class="w-16 h-16 bg-gradient-to-br from-uit-green to-uit-green-light rounded-xl flex items-center justify-center flex-shrink-0 mr-4 shadow-lg"
+              >
+                <svg
+                  class="w-8 h-8 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  ></path>
+                </svg>
+              </div>
+              <h2 class="text-3xl font-bold text-gray-900">Visi</h2>
+            </div>
+            <p class="text-lg text-gray-700 leading-relaxed">
+              {profile.vision}
+            </p>
+          </div>
+
+          <!-- Misi -->
+          <div class="bg-white rounded-2xl shadow-xl p-8 md:p-10 hover:shadow-2xl transition-shadow">
+            <div class="flex items-center mb-6">
+              <div
+                class="w-16 h-16 bg-gradient-to-br from-uit-green-light to-uit-green rounded-xl flex items-center justify-center flex-shrink-0 mr-4 shadow-lg"
+              >
+                <svg
+                  class="w-8 h-8 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                  ></path>
+                </svg>
+              </div>
+              <h2 class="text-3xl font-bold text-gray-900">Misi</h2>
+            </div>
+            <ul class="space-y-4">
               {
-                profile.history
-                  .split("\n\n")
-                  .map((paragraph) => (
-                    <p class="text-gray-700 leading-relaxed mb-4">
-                      {paragraph}
+                profile.mission.map((item, index) => (
+                  <li class="flex items-start">
+                    <span class="flex-shrink-0 w-7 h-7 bg-uit-green/10 text-uit-green-dark rounded-lg flex items-center justify-center font-bold text-sm mr-3 mt-0.5">
+                      {index + 1}
+                    </span>
+                    <p class="text-gray-700 leading-relaxed flex-1">
+                      {item}
                     </p>
-                  ))
+                  </li>
+                ))
               }
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pimpinan Section -->
+  <section class="py-16 md:py-24 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="max-w-6xl mx-auto">
+        <!-- Section Header -->
+        <div class="text-center mb-16">
+          <div class="flex items-center justify-center mb-6">
+            <div
+              class="w-20 h-20 bg-gradient-to-br from-uit-green to-uit-green-light rounded-2xl flex items-center justify-center shadow-lg"
+            >
+              <svg
+                class="w-10 h-10 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                ></path>
+              </svg>
             </div>
           </div>
+          <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Pimpinan Universitas</h2>
+          <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+            Kepemimpinan yang berpengalaman dan berdedikasi untuk kemajuan UIT
+          </p>
+        </div>
+
+        <!-- Leaders Grid -->
+        <div class="space-y-6">
+          {leaders.map((leader, index) => {
+            const isRektor = index === 0;
+            return (
+              <div class={`bg-gradient-to-br ${isRektor ? 'from-uit-green-dark to-uit-green' : 'from-white to-uit-bg'} rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 ${isRektor ? 'md:col-span-2' : ''}`}>
+                <div class="grid md:grid-cols-5 gap-6 p-8">
+                  <!-- Photo -->
+                  <div class="md:col-span-2 flex justify-center items-center">
+                    <div class={`relative w-48 h-48 rounded-2xl overflow-hidden shadow-lg ${isRektor ? 'ring-4 ring-white/50' : 'ring-2 ring-uit-green/20'}`}>
+                      {leader.photo ? (
+                        <img
+                          src={leader.photo}
+                          alt={leader.name}
+                          class="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div class="w-full h-full bg-gradient-to-br from-uit-green-light to-uit-green flex items-center justify-center">
+                          <svg
+                            class="w-24 h-24 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            ></path>
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <!-- Info -->
+                  <div class="md:col-span-3 flex flex-col justify-center">
+                    <div class={`inline-block mb-3 px-4 py-1 ${isRektor ? 'bg-white/20' : 'bg-uit-green/10'} backdrop-blur-sm rounded-full text-sm font-semibold ${isRektor ? 'text-white' : 'text-uit-green-dark'} w-fit`}>
+                      {leader.position}
+                    </div>
+                    <h3 class={`text-2xl md:text-3xl font-bold mb-3 ${isRektor ? 'text-white' : 'text-gray-900'}`}>
+                      {leader.name}
+                    </h3>
+                    {leader.description && (
+                      <p class={`text-lg leading-relaxed mb-4 ${isRektor ? 'text-white/90' : 'text-gray-700'}`}>
+                        {leader.description}
+                      </p>
+                    )}
+                    {leader.email && (
+                      <a
+                        href={`mailto:${leader.email}`}
+                        class={`inline-flex items-center gap-2 text-sm font-semibold ${isRektor ? 'text-white hover:text-white/80' : 'text-uit-green hover:text-uit-green-dark'} transition-colors w-fit`}
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        {leader.email}
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

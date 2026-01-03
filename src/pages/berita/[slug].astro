@@ -1,0 +1,491 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+interface NewsItem {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  image?: string;
+  publishedAt: string;
+  slug: string;
+  category?: string;
+  author?: string;
+  readTime?: string;
+  tags?: string[];
+}
+
+// Get slug from URL
+const { slug } = Astro.params;
+
+// Sample news data (in production, fetch from Strapi based on slug)
+const newsData: Record<string, NewsItem> = {
+  'pmb-gelombang-2-2025': {
+    id: '1',
+    title: 'Penerimaan Mahasiswa Baru Gelombang 2 Tahun 2025',
+    excerpt: 'UIT membuka pendaftaran mahasiswa baru untuk berbagai program studi unggulan. Daftar sekarang dan raih masa depan cerah Anda!',
+    content: `
+      <p>Universitas Indonesia Timur (UIT) dengan bangga mengumumkan pembukaan Penerimaan Mahasiswa Baru (PMB) Gelombang 2 untuk Tahun Akademik 2025. Ini adalah kesempatan emas bagi calon mahasiswa untuk bergabung dengan salah satu universitas terkemuka di Indonesia Timur.</p>
+
+      <h2>Program Studi yang Tersedia</h2>
+      <p>UIT menawarkan berbagai program studi unggulan yang dirancang untuk memenuhi kebutuhan industri masa depan:</p>
+      <ul>
+        <li>Teknik Informatika</li>
+        <li>Sistem Informasi</li>
+        <li>Teknik Elektro</li>
+        <li>Manajemen</li>
+        <li>Akuntansi</li>
+        <li>Teknik Sipil</li>
+        <li>Arsitektur</li>
+      </ul>
+
+      <h2>Keunggulan Kuliah di UIT</h2>
+      <p>Bergabung dengan UIT memberikan Anda berbagai keuntungan:</p>
+      <ul>
+        <li><strong>Fasilitas Modern:</strong> Laboratorium lengkap dengan peralatan terkini</li>
+        <li><strong>Dosen Berkualitas:</strong> Pengajar berpengalaman dan bersertifikasi internasional</li>
+        <li><strong>Kerja Sama Industri:</strong> Koneksi luas dengan perusahaan multinasional</li>
+        <li><strong>Biaya Terjangkau:</strong> Berbagai pilihan beasiswa untuk mahasiswa berprestasi</li>
+      </ul>
+
+      <h2>Jadwal Pendaftaran</h2>
+      <p>Pendaftaran PMB Gelombang 2 dibuka dengan jadwal sebagai berikut:</p>
+      <ul>
+        <li>Pembukaan Pendaftaran: 1 Januari 2025</li>
+        <li>Penutupan Pendaftaran: 31 Maret 2025</li>
+        <li>Tes Seleksi: 5-7 April 2025</li>
+        <li>Pengumuman: 15 April 2025</li>
+        <li>Registrasi Ulang: 20-30 April 2025</li>
+      </ul>
+
+      <h2>Cara Pendaftaran</h2>
+      <p>Proses pendaftaran dapat dilakukan secara online melalui portal PMB UIT. Berikut langkah-langkahnya:</p>
+      <ol>
+        <li>Kunjungi website PMB UIT</li>
+        <li>Buat akun dan lengkapi data diri</li>
+        <li>Upload dokumen persyaratan</li>
+        <li>Pilih program studi</li>
+        <li>Bayar biaya pendaftaran</li>
+        <li>Cetak kartu ujian</li>
+      </ol>
+
+      <h2>Persyaratan Umum</h2>
+      <ul>
+        <li>Lulusan SMA/SMK/MA atau sederajat</li>
+        <li>Fotocopy ijazah/SKL yang telah dilegalisir</li>
+        <li>Fotocopy rapor semester 1-6 yang telah dilegalisir</li>
+        <li>Pas foto 3x4 berwarna (3 lembar)</li>
+        <li>Fotocopy KTP/Kartu Pelajar</li>
+        <li>Surat keterangan sehat dari dokter</li>
+      </ul>
+
+      <h2>Informasi Lebih Lanjut</h2>
+      <p>Untuk informasi lebih detail mengenai PMB Gelombang 2, silakan hubungi:</p>
+      <ul>
+        <li>Telepon: (0411) 123-4567</li>
+        <li>WhatsApp: 0812-3456-7890</li>
+        <li>Email: pmb@uit.ac.id</li>
+        <li>Website: www.uit.ac.id/pmb</li>
+      </ul>
+
+      <p><strong>Jangan lewatkan kesempatan ini! Daftarkan diri Anda sekarang dan wujudkan impian Anda bersama UIT.</strong></p>
+    `,
+    publishedAt: '2025-12-15',
+    slug: 'pmb-gelombang-2-2025',
+    category: 'Pengumuman',
+    author: 'Tim PMB',
+    readTime: '5 menit',
+    tags: ['PMB', 'Pendaftaran', 'Mahasiswa Baru']
+  },
+  'seminar-nasional-teknologi-2025': {
+    id: '2',
+    title: 'Seminar Nasional Teknologi dan Inovasi 2025',
+    excerpt: 'UIT mengadakan seminar nasional dengan tema "Teknologi untuk Masa Depan Berkelanjutan" dengan pembicara dari berbagai universitas ternama.',
+    content: `
+      <p>Universitas Indonesia Timur (UIT) dengan bangga mempersembahkan Seminar Nasional Teknologi dan Inovasi 2025, sebuah acara bergengsi yang akan mempertemukan para akademisi, peneliti, praktisi, dan mahasiswa dalam forum diskusi teknologi terkini.</p>
+
+      <h2>Tema Seminar</h2>
+      <p>"Teknologi untuk Masa Depan Berkelanjutan" - tema ini dipilih untuk mengeksplorasi bagaimana teknologi dapat dimanfaatkan untuk menciptakan masa depan yang lebih berkelanjutan dan ramah lingkungan.</p>
+
+      <h2>Pembicara Utama</h2>
+      <ul>
+        <li><strong>Prof. Dr. Ahmad Santoso</strong> - Pakar AI dari Institut Teknologi Bandung</li>
+        <li><strong>Dr. Lisa Wijaya</strong> - Expert IoT dari Universitas Indonesia</li>
+        <li><strong>Ir. Budi Prakoso, M.T.</strong> - CEO TechStart Indonesia</li>
+        <li><strong>Dr. Eng. Siti Rahmawati</strong> - Peneliti Green Technology</li>
+      </ul>
+
+      <h2>Jadwal Acara</h2>
+      <p><strong>Hari 1 - 20 Januari 2025</strong></p>
+      <ul>
+        <li>08:00 - 09:00: Registrasi Peserta</li>
+        <li>09:00 - 10:00: Pembukaan dan Sambutan</li>
+        <li>10:00 - 12:00: Keynote Speech</li>
+        <li>12:00 - 13:00: Istirahat & Lunch</li>
+        <li>13:00 - 17:00: Sesi Paralel & Workshop</li>
+      </ul>
+
+      <p><strong>Hari 2 - 21 Januari 2025</strong></p>
+      <ul>
+        <li>08:00 - 09:00: Registrasi</li>
+        <li>09:00 - 12:00: Panel Diskusi</li>
+        <li>12:00 - 13:00: Istirahat & Lunch</li>
+        <li>13:00 - 15:00: Presentasi Paper</li>
+        <li>15:00 - 16:00: Penutupan & Sertifikat</li>
+      </ul>
+
+      <h2>Topik Pembahasan</h2>
+      <ul>
+        <li>Artificial Intelligence dan Machine Learning</li>
+        <li>Internet of Things (IoT) untuk Smart City</li>
+        <li>Blockchain Technology</li>
+        <li>Green Computing</li>
+        <li>Cybersecurity</li>
+        <li>Big Data Analytics</li>
+        <li>Cloud Computing</li>
+      </ul>
+
+      <h2>Biaya Pendaftaran</h2>
+      <ul>
+        <li>Mahasiswa: Rp 100.000</li>
+        <li>Umum: Rp 250.000</li>
+        <li>Early Bird (sebelum 31 Des): Diskon 25%</li>
+      </ul>
+
+      <h2>Fasilitas</h2>
+      <ul>
+        <li>Sertifikat peserta</li>
+        <li>Materi seminar (softcopy & hardcopy)</li>
+        <li>Lunch dan coffee break</li>
+        <li>Goodie bag</li>
+        <li>Kesempatan networking</li>
+      </ul>
+
+      <p><strong>Daftarkan diri Anda segera! Tempat terbatas.</strong></p>
+    `,
+    publishedAt: '2025-12-10',
+    slug: 'seminar-nasional-teknologi-2025',
+    category: 'Kegiatan',
+    author: 'Humas UIT',
+    readTime: '4 menit',
+    tags: ['Seminar', 'Teknologi', 'Inovasi']
+  }
+};
+
+// Get the news item or show 404
+const newsItem = newsData[slug || ''];
+
+if (!newsItem) {
+  return Astro.redirect('/404');
+}
+
+// Related news (same category)
+const relatedNews = Object.values(newsData)
+  .filter(n => n.category === newsItem.category && n.slug !== newsItem.slug)
+  .slice(0, 3);
+
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('id-ID', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+}
+
+const categoryColors: Record<string, string> = {
+  'Pengumuman': 'bg-uit-green/10 text-uit-green-dark',
+  'Kegiatan': 'bg-blue-50 text-blue-700',
+  'Prestasi': 'bg-yellow-50 text-yellow-700',
+  'Berita': 'bg-gray-50 text-gray-700'
+};
+---
+
+<BaseLayout 
+  title={`${newsItem.title} - UIT`}
+  description={newsItem.excerpt}
+>
+  <!-- Breadcrumb -->
+  <nav class="bg-gray-50 py-4">
+    <div class="container mx-auto px-4">
+      <ol class="flex items-center space-x-2 text-sm">
+        <li>
+          <a href="/" class="text-gray-500 hover:text-uit-green">Beranda</a>
+        </li>
+        <li class="text-gray-400">/</li>
+        <li>
+          <a href="/berita" class="text-gray-500 hover:text-uit-green">Berita</a>
+        </li>
+        <li class="text-gray-400">/</li>
+        <li class="text-gray-900 font-medium truncate max-w-xs">
+          {newsItem.title}
+        </li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- Article Content -->
+  <article class="py-12 md:py-16 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto">
+        
+        <!-- Category Badge -->
+        {newsItem.category && (
+          <div class="mb-4">
+            <a 
+              href={`/berita?category=${newsItem.category}`}
+              class={`inline-block text-sm px-4 py-2 rounded-full font-semibold ${categoryColors[newsItem.category] || 'bg-gray-50 text-gray-700'}`}
+            >
+              {newsItem.category}
+            </a>
+          </div>
+        )}
+
+        <!-- Title -->
+        <h1 class="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+          {newsItem.title}
+        </h1>
+
+        <!-- Meta Info -->
+        <div class="flex flex-wrap items-center gap-4 text-gray-600 mb-8 pb-8 border-b">
+          {newsItem.author && (
+            <div class="flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              <span class="font-medium">{newsItem.author}</span>
+            </div>
+          )}
+          
+          <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <span>{formatDate(newsItem.publishedAt)}</span>
+          </div>
+
+          {newsItem.readTime && (
+            <div class="flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>{newsItem.readTime}</span>
+            </div>
+          )}
+
+          <!-- Share Buttons -->
+          <div class="ml-auto flex items-center gap-2">
+            <span class="text-sm font-medium mr-2">Bagikan:</span>
+            <button 
+              class="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(window.location.href), '_blank', 'width=600,height=400')"
+              title="Bagikan ke Facebook"
+            >
+              <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </button>
+            <button 
+              class="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              onclick="window.open('https://twitter.com/intent/tweet?url=' + encodeURIComponent(window.location.href) + '&text=' + encodeURIComponent(document.title), '_blank', 'width=600,height=400')"
+              title="Bagikan ke Twitter"
+            >
+              <svg class="w-5 h-5 text-sky-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              </svg>
+            </button>
+            <button 
+              class="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              onclick="window.open('https://wa.me/?text=' + encodeURIComponent(document.title + ' ' + window.location.href), '_blank')"
+              title="Bagikan ke WhatsApp"
+            >
+              <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Featured Image -->
+        {newsItem.image ? (
+          <div class="mb-8 rounded-2xl overflow-hidden shadow-lg">
+            <img 
+              src={newsItem.image} 
+              alt={newsItem.title}
+              class="w-full h-auto"
+            />
+          </div>
+        ) : (
+          <div class="mb-8 aspect-video bg-gradient-to-br from-uit-green-light/30 to-uit-green/30 rounded-2xl flex items-center justify-center">
+            <svg class="w-24 h-24 text-uit-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+            </svg>
+          </div>
+        )}
+
+        <!-- Article Content -->
+        <div class="prose prose-lg max-w-none">
+          <div class="text-gray-700 leading-relaxed" set:html={newsItem.content} />
+        </div>
+
+        <!-- Tags -->
+        {newsItem.tags && newsItem.tags.length > 0 && (
+          <div class="mt-12 pt-8 border-t">
+            <div class="flex items-center flex-wrap gap-2">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+              </svg>
+              {newsItem.tags.map(tag => (
+                <a 
+                  href={`/berita?tag=${tag}`}
+                  class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm transition-colors"
+                >
+                  #{tag}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </article>
+
+  <!-- Related News -->
+  {relatedNews.length > 0 && (
+    <section class="py-12 md:py-16 bg-gray-50">
+      <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+          <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-8">
+            Berita Terkait
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {relatedNews.map((item) => (
+              <article class="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all group">
+                <div class="aspect-video bg-gradient-to-br from-uit-green-light/30 to-uit-green/30 overflow-hidden">
+                  {item.image ? (
+                    <img 
+                      src={item.image} 
+                      alt={item.title}
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div class="w-full h-full flex items-center justify-center">
+                      <svg class="w-12 h-12 text-uit-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+
+                <div class="p-6">
+                  {item.category && (
+                    <span class={`inline-block text-xs px-3 py-1 rounded-full font-semibold mb-3 ${categoryColors[item.category] || 'bg-gray-50 text-gray-700'}`}>
+                      {item.category}
+                    </span>
+                  )}
+                  
+                  <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-uit-green transition-colors line-clamp-2">
+                    {item.title}
+                  </h3>
+                  
+                  <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+                    {item.excerpt}
+                  </p>
+                  
+                  <a 
+                    href={`/berita/${item.slug}`}
+                    class="inline-flex items-center text-uit-green hover:text-uit-green-dark font-semibold text-sm"
+                  >
+                    Baca Selengkapnya
+                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div class="text-center mt-8">
+            <a 
+              href="/berita" 
+              class="inline-flex items-center px-6 py-3 bg-uit-green hover:bg-uit-green-dark text-white rounded-full font-semibold transition-colors"
+            >
+              Lihat Semua Berita
+              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <style>
+    .prose {
+      color: #374151;
+    }
+
+    .prose h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #111827;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .prose h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #111827;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .prose p {
+      margin-bottom: 1.25rem;
+      line-height: 1.8;
+    }
+
+    .prose ul, .prose ol {
+      margin: 1.25rem 0;
+      padding-left: 1.5rem;
+    }
+
+    .prose li {
+      margin-bottom: 0.5rem;
+      line-height: 1.8;
+    }
+
+    .prose ul {
+      list-style-type: disc;
+    }
+
+    .prose ol {
+      list-style-type: decimal;
+    }
+
+    .prose strong {
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .prose a {
+      color: #059669;
+      text-decoration: underline;
+    }
+
+    .prose a:hover {
+      color: #047857;
+    }
+
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</BaseLayout>
