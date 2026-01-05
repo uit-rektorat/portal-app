@@ -825,7 +825,114 @@ query {
 
 ---
 
-## 📚 Resources
+## � Auto-Generate Slug dari Title
+
+### Masalah
+Slug harus diisi manual setiap kali membuat artikel baru, meskipun sudah ada tombol "Generate".
+
+### Solusi: Lifecycle Hooks
+
+Buat file lifecycle untuk auto-generate slug dari title secara otomatis.
+
+**Lokasi File**: `strapi/src/api/article/content-types/article/lifecycles.js`
+
+```javascript
+/**
+ * Lifecycle hooks for Article content type
+ * Auto-generate slug from title when creating or updating article
+ */
+
+const slugify = (text) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')           // Replace spaces with -
+    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+    .replace(/^-+/, '')             // Trim - from start of text
+    .replace(/-+$/, '');            // Trim - from end of text
+};
+
+module.exports = {
+  async beforeCreate(event) {
+    const { data } = event.params;
+    
+    // Auto-generate slug from title if slug is empty
+    if (data.title && !data.slug) {
+      data.slug = slugify(data.title);
+    }
+  },
+
+  async beforeUpdate(event) {
+    const { data } = event.params;
+    
+    // Auto-generate slug from title if slug is empty and title changed
+    if (data.title && !data.slug) {
+      data.slug = slugify(data.title);
+    }
+  },
+};
+```
+
+### Cara Implementasi
+
+1. **Buka Folder Strapi Backend**
+   ```
+   cd strapi
+   ```
+
+2. **Buat File Lifecycle**
+   - Navigasi ke: `src/api/article/content-types/article/`
+   - Buat file baru: `lifecycles.js`
+   - Copy-paste code di atas
+
+3. **Struktur Folder**
+   ```
+   strapi/
+   └── src/
+       └── api/
+           └── article/
+               └── content-types/
+                   └── article/
+                       ├── schema.json
+                       └── lifecycles.js  ← File baru
+   ```
+
+4. **Restart Strapi**
+   ```bash
+   npm run develop
+   # atau
+   yarn develop
+   ```
+
+### Hasil
+
+✅ Ketika membuat artikel baru:
+- Isi field **Title**: `Universitas Indonesia Timur Raih Akreditasi A`
+- Field **Slug** akan otomatis terisi: `universitas-indonesia-timur-raih-akreditasi-a`
+- Tidak perlu klik tombol "Generate" lagi!
+
+✅ Slug akan di-generate dengan format:
+- Lowercase
+- Spasi diganti dengan `-`
+- Karakter khusus dihapus
+- Clean dan SEO-friendly
+
+### Konfigurasi UID Field
+
+Di Strapi Content-Type Builder untuk field `slug`:
+
+**Type**: UID  
+**Attached field**: title  
+**Required field**: ✅ (centang)  
+**Unique**: Otomatis untuk UID type  
+
+**Catatan**: Field UID di Strapi sudah otomatis unique, jadi tidak perlu setting manual.
+
+---
+
+## �📚 Resources
 
 - [Strapi Documentation](https://docs.strapi.io/)
 - [Strapi REST API Documentation](https://docs.strapi.io/dev-docs/api/rest)

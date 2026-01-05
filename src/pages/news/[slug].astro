@@ -1,11 +1,29 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { getNewsBySlug, getNews } from '../../lib/strapi';
+
+// Generate static pages for each news slug at build time
+export const prerender = true;
+
+export async function getStaticPaths() {
+  try {
+    const all = await getNews(100);
+    return all.map((n) => ({ params: { slug: n.slug } }));
+  } catch (err) {
+    // If fetching slugs fails (e.g., Strapi unavailable), return no paths.
+    // Build will still succeed but dynamic pages won't be generated.
+    console.warn('getStaticPaths: failed to fetch slugs', err);
+    return [];
+  }
+}
 
 interface NewsItem {
   id: string;
   title: string;
   excerpt: string;
-  content: string;
+  content?: string;
   image?: string;
   publishedAt: string;
   slug: string;
@@ -18,178 +36,24 @@ interface NewsItem {
 // Get slug from URL
 const { slug } = Astro.params;
 
-// Sample news data (in production, fetch from Strapi based on slug)
-const newsData: Record<string, NewsItem> = {
-  'pmb-gelombang-2-2025': {
-    id: '1',
-    title: 'Penerimaan Mahasiswa Baru Gelombang 2 Tahun 2025',
-    excerpt: 'UIT membuka pendaftaran mahasiswa baru untuk berbagai program studi unggulan. Daftar sekarang dan raih masa depan cerah Anda!',
-    content: `
-      <p>Universitas Indonesia Timur (UIT) dengan bangga mengumumkan pembukaan Penerimaan Mahasiswa Baru (PMB) Gelombang 2 untuk Tahun Akademik 2025. Ini adalah kesempatan emas bagi calon mahasiswa untuk bergabung dengan salah satu universitas terkemuka di Indonesia Timur.</p>
+// Fetch article data from Strapi by slug
+const newsItem = await getNewsBySlug(slug);
 
-      <h2>Program Studi yang Tersedia</h2>
-      <p>UIT menawarkan berbagai program studi unggulan yang dirancang untuk memenuhi kebutuhan industri masa depan:</p>
-      <ul>
-        <li>Teknik Informatika</li>
-        <li>Sistem Informasi</li>
-        <li>Teknik Elektro</li>
-        <li>Manajemen</li>
-        <li>Akuntansi</li>
-        <li>Teknik Sipil</li>
-        <li>Arsitektur</li>
-      </ul>
-
-      <h2>Keunggulan Kuliah di UIT</h2>
-      <p>Bergabung dengan UIT memberikan Anda berbagai keuntungan:</p>
-      <ul>
-        <li><strong>Fasilitas Modern:</strong> Laboratorium lengkap dengan peralatan terkini</li>
-        <li><strong>Dosen Berkualitas:</strong> Pengajar berpengalaman dan bersertifikasi internasional</li>
-        <li><strong>Kerja Sama Industri:</strong> Koneksi luas dengan perusahaan multinasional</li>
-        <li><strong>Biaya Terjangkau:</strong> Berbagai pilihan beasiswa untuk mahasiswa berprestasi</li>
-      </ul>
-
-      <h2>Jadwal Pendaftaran</h2>
-      <p>Pendaftaran PMB Gelombang 2 dibuka dengan jadwal sebagai berikut:</p>
-      <ul>
-        <li>Pembukaan Pendaftaran: 1 Januari 2025</li>
-        <li>Penutupan Pendaftaran: 31 Maret 2025</li>
-        <li>Tes Seleksi: 5-7 April 2025</li>
-        <li>Pengumuman: 15 April 2025</li>
-        <li>Registrasi Ulang: 20-30 April 2025</li>
-      </ul>
-
-      <h2>Cara Pendaftaran</h2>
-      <p>Proses pendaftaran dapat dilakukan secara online melalui portal PMB UIT. Berikut langkah-langkahnya:</p>
-      <ol>
-        <li>Kunjungi website PMB UIT</li>
-        <li>Buat akun dan lengkapi data diri</li>
-        <li>Upload dokumen persyaratan</li>
-        <li>Pilih program studi</li>
-        <li>Bayar biaya pendaftaran</li>
-        <li>Cetak kartu ujian</li>
-      </ol>
-
-      <h2>Persyaratan Umum</h2>
-      <ul>
-        <li>Lulusan SMA/SMK/MA atau sederajat</li>
-        <li>Fotocopy ijazah/SKL yang telah dilegalisir</li>
-        <li>Fotocopy rapor semester 1-6 yang telah dilegalisir</li>
-        <li>Pas foto 3x4 berwarna (3 lembar)</li>
-        <li>Fotocopy KTP/Kartu Pelajar</li>
-        <li>Surat keterangan sehat dari dokter</li>
-      </ul>
-
-      <h2>Informasi Lebih Lanjut</h2>
-      <p>Untuk informasi lebih detail mengenai PMB Gelombang 2, silakan hubungi:</p>
-      <ul>
-        <li>Telepon: (0411) 123-4567</li>
-        <li>WhatsApp: 0812-3456-7890</li>
-        <li>Email: pmb@uit.ac.id</li>
-        <li>Website: www.uit.ac.id/pmb</li>
-      </ul>
-
-      <p><strong>Jangan lewatkan kesempatan ini! Daftarkan diri Anda sekarang dan wujudkan impian Anda bersama UIT.</strong></p>
-    `,
-    publishedAt: '2025-12-15',
-    slug: 'pmb-gelombang-2-2025',
-    category: 'Pengumuman',
-    author: 'Tim PMB',
-    readTime: '5 menit',
-    tags: ['PMB', 'Pendaftaran', 'Mahasiswa Baru']
-  },
-  'seminar-nasional-teknologi-2025': {
-    id: '2',
-    title: 'Seminar Nasional Teknologi dan Inovasi 2025',
-    excerpt: 'UIT mengadakan seminar nasional dengan tema "Teknologi untuk Masa Depan Berkelanjutan" dengan pembicara dari berbagai universitas ternama.',
-    content: `
-      <p>Universitas Indonesia Timur (UIT) dengan bangga mempersembahkan Seminar Nasional Teknologi dan Inovasi 2025, sebuah acara bergengsi yang akan mempertemukan para akademisi, peneliti, praktisi, dan mahasiswa dalam forum diskusi teknologi terkini.</p>
-
-      <h2>Tema Seminar</h2>
-      <p>"Teknologi untuk Masa Depan Berkelanjutan" - tema ini dipilih untuk mengeksplorasi bagaimana teknologi dapat dimanfaatkan untuk menciptakan masa depan yang lebih berkelanjutan dan ramah lingkungan.</p>
-
-      <h2>Pembicara Utama</h2>
-      <ul>
-        <li><strong>Prof. Dr. Ahmad Santoso</strong> - Pakar AI dari Institut Teknologi Bandung</li>
-        <li><strong>Dr. Lisa Wijaya</strong> - Expert IoT dari Universitas Indonesia</li>
-        <li><strong>Ir. Budi Prakoso, M.T.</strong> - CEO TechStart Indonesia</li>
-        <li><strong>Dr. Eng. Siti Rahmawati</strong> - Peneliti Green Technology</li>
-      </ul>
-
-      <h2>Jadwal Acara</h2>
-      <p><strong>Hari 1 - 20 Januari 2025</strong></p>
-      <ul>
-        <li>08:00 - 09:00: Registrasi Peserta</li>
-        <li>09:00 - 10:00: Pembukaan dan Sambutan</li>
-        <li>10:00 - 12:00: Keynote Speech</li>
-        <li>12:00 - 13:00: Istirahat & Lunch</li>
-        <li>13:00 - 17:00: Sesi Paralel & Workshop</li>
-      </ul>
-
-      <p><strong>Hari 2 - 21 Januari 2025</strong></p>
-      <ul>
-        <li>08:00 - 09:00: Registrasi</li>
-        <li>09:00 - 12:00: Panel Diskusi</li>
-        <li>12:00 - 13:00: Istirahat & Lunch</li>
-        <li>13:00 - 15:00: Presentasi Paper</li>
-        <li>15:00 - 16:00: Penutupan & Sertifikat</li>
-      </ul>
-
-      <h2>Topik Pembahasan</h2>
-      <ul>
-        <li>Artificial Intelligence dan Machine Learning</li>
-        <li>Internet of Things (IoT) untuk Smart City</li>
-        <li>Blockchain Technology</li>
-        <li>Green Computing</li>
-        <li>Cybersecurity</li>
-        <li>Big Data Analytics</li>
-        <li>Cloud Computing</li>
-      </ul>
-
-      <h2>Biaya Pendaftaran</h2>
-      <ul>
-        <li>Mahasiswa: Rp 100.000</li>
-        <li>Umum: Rp 250.000</li>
-        <li>Early Bird (sebelum 31 Des): Diskon 25%</li>
-      </ul>
-
-      <h2>Fasilitas</h2>
-      <ul>
-        <li>Sertifikat peserta</li>
-        <li>Materi seminar (softcopy & hardcopy)</li>
-        <li>Lunch dan coffee break</li>
-        <li>Goodie bag</li>
-        <li>Kesempatan networking</li>
-      </ul>
-
-      <p><strong>Daftarkan diri Anda segera! Tempat terbatas.</strong></p>
-    `,
-    publishedAt: '2025-12-10',
-    slug: 'seminar-nasional-teknologi-2025',
-    category: 'Kegiatan',
-    author: 'Humas UIT',
-    readTime: '4 menit',
-    tags: ['Seminar', 'Teknologi', 'Inovasi']
-  }
-};
-
-// Get the news item or show 404
-const newsItem = newsData[slug || ''];
-
+// If no article found, redirect to 404
 if (!newsItem) {
   return Astro.redirect('/404');
 }
 
-// Related news (same category)
-const relatedNews = Object.values(newsData)
-  .filter(n => n.category === newsItem.category && n.slug !== newsItem.slug)
-  .slice(0, 3);
+// Fetch related news by category
+const allNews = await getNews(100);
+const relatedNews = allNews.filter(n => n.category === newsItem.category && n.slug !== newsItem.slug).slice(0, 3);
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString('id-ID', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  return date.toLocaleDateString('id-ID', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   });
 }
 
@@ -205,6 +69,8 @@ const categoryColors: Record<string, string> = {
   title={`${newsItem.title} - UIT`}
   description={newsItem.excerpt}
 >
+  <Header slot="header" />
+  
   <!-- Breadcrumb -->
   <nav class="bg-gray-50 py-4">
     <div class="container mx-auto px-4">
@@ -214,7 +80,7 @@ const categoryColors: Record<string, string> = {
         </li>
         <li class="text-gray-400">/</li>
         <li>
-          <a href="/berita" class="text-gray-500 hover:text-uit-green">Berita</a>
+          <a href="/news" class="text-gray-500 hover:text-uit-green">Berita</a>
         </li>
         <li class="text-gray-400">/</li>
         <li class="text-gray-900 font-medium truncate max-w-xs">
@@ -233,7 +99,7 @@ const categoryColors: Record<string, string> = {
         {newsItem.category && (
           <div class="mb-4">
             <a 
-              href={`/berita?category=${newsItem.category}`}
+              href={`/news?category=${newsItem.category}`}
               class={`inline-block text-sm px-4 py-2 rounded-full font-semibold ${categoryColors[newsItem.category] || 'bg-gray-50 text-gray-700'}`}
             >
               {newsItem.category}
@@ -337,7 +203,7 @@ const categoryColors: Record<string, string> = {
               </svg>
               {newsItem.tags.map(tag => (
                 <a 
-                  href={`/berita?tag=${tag}`}
+                  href={`/news?tag=${tag}`}
                   class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm transition-colors"
                 >
                   #{tag}
@@ -394,7 +260,7 @@ const categoryColors: Record<string, string> = {
                   </p>
                   
                   <a 
-                    href={`/berita/${item.slug}`}
+                    href={`/news/${item.slug}`}
                     class="inline-flex items-center text-uit-green hover:text-uit-green-dark font-semibold text-sm"
                   >
                     Baca Selengkapnya
@@ -409,7 +275,7 @@ const categoryColors: Record<string, string> = {
 
           <div class="text-center mt-8">
             <a 
-              href="/berita" 
+              href="/news" 
               class="inline-flex items-center px-6 py-3 bg-uit-green hover:bg-uit-green-dark text-white rounded-full font-semibold transition-colors"
             >
               Lihat Semua Berita
@@ -488,4 +354,6 @@ const categoryColors: Record<string, string> = {
       overflow: hidden;
     }
   </style>
+
+  <Footer slot="footer" />
 </BaseLayout>

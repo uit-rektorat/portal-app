@@ -43,13 +43,14 @@ export interface News {
   id: string;
   title: string;
   excerpt: string;
-  image: {
-    url: string;
-    alternativeText: string;
-  };
+  image?: string; // URL to image
   publishedAt: string;
   slug: string;
   category?: string;
+  author?: string;
+  readTime?: string;
+  content?: string;
+  tags?: string[];
 }
 
 export interface Agenda {
@@ -150,14 +151,35 @@ export const getNews = async (limit: number = 6): Promise<News[]> => {
     const data = await fetchStrapi(`/articles?populate=*&pagination[limit]=${limit}&sort=publishedAt:desc`);
     
     const news = data.data?.map((item: any) => {
+      const attrs = item.attributes || item;
+      const imagePath = attrs.image?.data?.attributes?.url || attrs.image?.url;
+      
+      // Generate slug from title if not exists
+      const generateSlug = (title: string): string => {
+        return title
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '') // Remove special chars
+          .replace(/\s+/g, '-')      // Replace spaces with hyphens
+          .replace(/-+/g, '-')       // Replace multiple hyphens with single
+          .trim();
+      };
+      
+      const title = attrs.title || '';
+      const slug = attrs.slug || attrs.Slug || (title ? generateSlug(title) : `article-${item.id}`);
+      
+      // Map with fallback to handle different Strapi response structures
       return {
-        id: item.id.toString(),
-        title: item.title,
-        excerpt: item.excerpt,
-        image: item.image?.url ? `${STRAPI_URL}${item.image.url}` : undefined,
-        publishedAt: item.publishedAt,
-        slug: item.slug,
-        category: item.category
+        id: item.id?.toString() || '',
+        title: title,
+        excerpt: attrs.excerpt || '',
+        image: imagePath ? `${STRAPI_URL}${imagePath}` : undefined,
+        publishedAt: attrs.publishedAt || new Date().toISOString(),
+        slug: slug,
+        category: attrs.category || attrs.Category || 'Berita',
+        author: attrs.author?.data?.attributes?.name || attrs.author?.name || attrs.author || 'Admin',
+        readTime: attrs.readTime || attrs.ReadTime || '5 menit',
+        content: attrs.content || attrs.Content || '',
+        tags: attrs.tags?.data ? attrs.tags.data.map((t: any) => t.attributes?.name || t.attributes?.title || '') : []
       };
     }) || [];
     
@@ -165,6 +187,48 @@ export const getNews = async (limit: number = 6): Promise<News[]> => {
   } catch (error) {
     console.error('Error fetching news:', error);
     return [];
+  }
+};
+
+export const getNewsBySlug = async (slug: string): Promise<News | null> => {
+  try {
+    const data = await fetchStrapi(`/articles?filters[slug][$eq]=${slug}&populate=*`);
+    
+    const item = data.data?.[0];
+    if (!item) return null;
+    
+    const attrs = item.attributes || item;
+    const imagePath = attrs.image?.data?.attributes?.url || attrs.image?.url;
+    
+    // Generate slug from title if not exists
+    const generateSlug = (title: string): string => {
+      return title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+    };
+    
+    const title = attrs.title || '';
+    const itemSlug = attrs.slug || attrs.Slug || (title ? generateSlug(title) : `article-${item.id}`);
+    
+    return {
+      id: item.id?.toString() || '',
+      title: title,
+      excerpt: attrs.excerpt || '',
+      image: imagePath ? `${STRAPI_URL}${imagePath}` : undefined,
+      publishedAt: attrs.publishedAt || new Date().toISOString(),
+      slug: itemSlug,
+      category: attrs.category || attrs.Category || 'Berita',
+      author: attrs.author?.data?.attributes?.name || attrs.author?.name || attrs.author || 'Admin',
+      readTime: attrs.readTime || attrs.ReadTime || '5 menit',
+      content: attrs.content || attrs.Content || '',
+      tags: attrs.tags?.data ? attrs.tags.data.map((t: any) => t.attributes?.name || t.attributes?.title || '') : []
+    };
+  } catch (error) {
+    console.error('Error fetching news by slug:', error);
+    return null;
   }
 };
 

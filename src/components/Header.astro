@@ -126,8 +126,13 @@ const currentPath = Astro.url.pathname;
           Program Studi
         </a>
         <a
-          href="#"
-          class="text-gray-700 hover:text-uit-green font-medium transition-colors"
+          href="/news"
+          class:list={[
+            "font-medium transition-colors",
+            currentPath.startsWith("/news")
+              ? "text-uit-green"
+              : "text-gray-700 hover:text-uit-green",
+          ]}
         >
           Berita
         </a>
@@ -175,7 +180,7 @@ const currentPath = Astro.url.pathname;
         >Program Studi</a
       >
       <a
-        href="#"
+        href="/news"
         class="block py-2 text-gray-700 hover:text-uit-green font-medium"
         >Berita</a
       >

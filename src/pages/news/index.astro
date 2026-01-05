@@ -1,5 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { getNews } from '../../lib/strapi';
 
 interface NewsItem {
   id: string;
@@ -13,129 +16,8 @@ interface NewsItem {
   readTime?: string;
 }
 
-// Default news items (in production, fetch from Strapi)
-const allNews: NewsItem[] = [
-  {
-    id: '1',
-    title: 'Penerimaan Mahasiswa Baru Gelombang 2 Tahun 2025',
-    excerpt: 'UIT membuka pendaftaran mahasiswa baru untuk berbagai program studi unggulan. Daftar sekarang dan raih masa depan cerah Anda! Program ini menawarkan berbagai kemudahan bagi calon mahasiswa baru.',
-    publishedAt: '2025-12-15',
-    slug: 'pmb-gelombang-2-2025',
-    category: 'Pengumuman',
-    author: 'Tim PMB',
-    readTime: '3 menit'
-  },
-  {
-    id: '2',
-    title: 'Seminar Nasional Teknologi dan Inovasi 2025',
-    excerpt: 'UIT mengadakan seminar nasional dengan tema "Teknologi untuk Masa Depan Berkelanjutan" dengan pembicara dari berbagai universitas ternama. Acara ini akan berlangsung selama 2 hari.',
-    publishedAt: '2025-12-10',
-    slug: 'seminar-nasional-teknologi-2025',
-    category: 'Kegiatan',
-    author: 'Humas UIT',
-    readTime: '4 menit'
-  },
-  {
-    id: '3',
-    title: 'Mahasiswa UIT Raih Juara 1 Kompetisi Nasional',
-    excerpt: 'Tim mahasiswa UIT berhasil meraih juara 1 dalam kompetisi inovasi teknologi tingkat nasional yang diikuti oleh 50 universitas dari seluruh Indonesia.',
-    publishedAt: '2025-12-08',
-    slug: 'mahasiswa-juara-kompetisi',
-    category: 'Prestasi',
-    author: 'Humas UIT',
-    readTime: '5 menit'
-  },
-  {
-    id: '4',
-    title: 'Kerja Sama dengan Industri untuk Program Magang',
-    excerpt: 'UIT menjalin kerja sama strategis dengan berbagai perusahaan multinasional untuk program magang dan penempatan kerja mahasiswa. Program ini mencakup berbagai bidang industri.',
-    publishedAt: '2025-12-05',
-    slug: 'kerjasama-industri-magang',
-    category: 'Berita',
-    author: 'Humas UIT',
-    readTime: '6 menit'
-  },
-  {
-    id: '5',
-    title: 'Beasiswa Prestasi untuk Mahasiswa Berprestasi',
-    excerpt: 'UIT menyediakan berbagai program beasiswa untuk mahasiswa berprestasi akademik dan non-akademik. Info lengkap dan cara pendaftaran dapat diakses melalui portal mahasiswa.',
-    publishedAt: '2025-12-01',
-    slug: 'beasiswa-prestasi-2025',
-    category: 'Pengumuman',
-    author: 'Tim Beasiswa',
-    readTime: '4 menit'
-  },
-  {
-    id: '6',
-    title: 'Fasilitas Laboratorium Baru Diresmikan',
-    excerpt: 'UIT meresmikan laboratorium komputer dan riset terbaru dengan teknologi canggih untuk mendukung pembelajaran mahasiswa. Laboratorium ini dilengkapi dengan peralatan terkini.',
-    publishedAt: '2025-11-28',
-    slug: 'laboratorium-baru-diresmikan',
-    category: 'Berita',
-    author: 'Humas UIT',
-    readTime: '3 menit'
-  },
-  {
-    id: '7',
-    title: 'Workshop Pengembangan Soft Skills Mahasiswa',
-    excerpt: 'Program pengembangan soft skills untuk meningkatkan kemampuan komunikasi, kepemimpinan, dan kerja sama tim mahasiswa. Workshop ini akan diselenggarakan setiap bulan.',
-    publishedAt: '2025-11-25',
-    slug: 'workshop-soft-skills',
-    category: 'Kegiatan',
-    author: 'Career Center',
-    readTime: '4 menit'
-  },
-  {
-    id: '8',
-    title: 'Tim Robotika UIT Wakili Indonesia di Kompetisi Internasional',
-    excerpt: 'Tim Robotika UIT terpilih mewakili Indonesia dalam kompetisi robotika internasional yang akan diselenggarakan di Singapura bulan depan.',
-    publishedAt: '2025-11-20',
-    slug: 'tim-robotika-internasional',
-    category: 'Prestasi',
-    author: 'Humas UIT',
-    readTime: '5 menit'
-  },
-  {
-    id: '9',
-    title: 'Pendaftaran Program Pertukaran Mahasiswa Dibuka',
-    excerpt: 'UIT membuka pendaftaran program pertukaran mahasiswa ke berbagai universitas mitra di Asia dan Eropa untuk semester genap 2026.',
-    publishedAt: '2025-11-15',
-    slug: 'program-pertukaran-mahasiswa',
-    category: 'Pengumuman',
-    author: 'International Office',
-    readTime: '4 menit'
-  },
-  {
-    id: '10',
-    title: 'Peluncuran Portal E-Learning Baru',
-    excerpt: 'UIT meluncurkan portal e-learning generasi terbaru dengan fitur-fitur canggih untuk mendukung pembelajaran jarak jauh yang lebih efektif.',
-    publishedAt: '2025-11-10',
-    slug: 'portal-elearning-baru',
-    category: 'Berita',
-    author: 'Tim IT',
-    readTime: '3 menit'
-  },
-  {
-    id: '11',
-    title: 'Kuliah Tamu: AI dan Machine Learning untuk Masa Depan',
-    excerpt: 'Kuliah tamu bersama pakar AI internasional membahas perkembangan terkini artificial intelligence dan machine learning serta aplikasinya di industri.',
-    publishedAt: '2025-11-05',
-    slug: 'kuliah-tamu-ai-ml',
-    category: 'Kegiatan',
-    author: 'Prodi Informatika',
-    readTime: '5 menit'
-  },
-  {
-    id: '12',
-    title: 'Mahasiswa UIT Ciptakan Aplikasi Kesehatan Inovatif',
-    excerpt: 'Mahasiswa UIT mengembangkan aplikasi kesehatan berbasis AI yang dapat mendeteksi penyakit dini melalui analisis gejala dan mendapat apresiasi dari Kemenkes.',
-    publishedAt: '2025-11-01',
-    slug: 'aplikasi-kesehatan-inovatif',
-    category: 'Prestasi',
-    author: 'Humas UIT',
-    readTime: '6 menit'
-  }
-];
+// Fetch all news from Strapi
+const allNews = await getNews(100); // Fetch many articles
 
 // Get unique categories
 const categories = ['Semua', ...new Set(allNews.map(n => n.category).filter(Boolean))];
@@ -169,12 +51,14 @@ const categoryStats = categories.slice(1).map(cat => ({
   title="Berita & Pengumuman - UIT"
   description="Informasi terkini seputar kegiatan, pencapaian, dan pengumuman Universitas Indonesia Timur"
 >
+  <Header slot="header" />
+  
   <!-- Hero Section -->
   <section class="bg-gradient-to-br from-uit-green to-uit-green-dark text-white py-16 md:py-20">
     <div class="container mx-auto px-4">
       <div class="max-w-4xl mx-auto text-center">
         <h1 class="text-4xl md:text-5xl font-bold mb-4">
-          Berita & Pengumuman
+          Berita Seputar Kampus
         </h1>
         <p class="text-xl text-white/90 mb-8">
           Informasi terkini seputar kegiatan, pencapaian, dan pengumuman UIT
@@ -186,12 +70,16 @@ const categoryStats = categories.slice(1).map(cat => ({
             type="text" 
             id="searchInput"
             placeholder="Cari berita, pengumuman, atau kegiatan..." 
-            class="w-full px-6 py-4 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-white/30 shadow-xl"
+            class="w-full px-6 py-4 pr-32 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-white/30 shadow-xl"
           />
-          <button class="absolute right-2 top-1/2 -translate-y-1/2 bg-uit-green hover:bg-uit-green-dark text-white px-6 py-2 rounded-full transition-colors">
+          <button 
+            id="searchButton"
+            class="absolute right-2 top-1/2 -translate-y-1/2 bg-uit-green hover:bg-uit-green-dark text-white px-6 py-2 rounded-full transition-colors flex items-center gap-2"
+          >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
+            <span class="hidden sm:inline">Cari</span>
           </button>
         </div>
       </div>
@@ -263,12 +151,12 @@ const categoryStats = categories.slice(1).map(cat => ({
                   </div>
 
                   <!-- Title -->
-                  <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-uit-green transition-colors line-clamp-2">
+                  <h3 class="news-title text-xl font-bold text-gray-900 mb-2 group-hover:text-uit-green transition-colors line-clamp-2">
                     {item.title}
                   </h3>
 
                   <!-- Excerpt -->
-                  <p class="text-gray-600 mb-4 line-clamp-3 text-sm">
+                  <p class="news-excerpt text-gray-600 mb-4 line-clamp-3 text-sm">
                     {item.excerpt}
                   </p>
 
@@ -294,7 +182,7 @@ const categoryStats = categories.slice(1).map(cat => ({
 
                   <!-- Read More -->
                   <a 
-                    href={`/berita/${item.slug}`}
+                    href={`/news/${item.slug}`}
                     class="inline-flex items-center text-uit-green hover:text-uit-green-dark font-semibold"
                   >
                     Baca Selengkapnya
@@ -351,7 +239,7 @@ const categoryStats = categories.slice(1).map(cat => ({
             </h3>
             <div class="space-y-4">
               {recentNews.map((item) => (
-                <a href={`/berita/${item.slug}`} class="block group">
+                <a href={`/news/${item.slug}`} class="block group">
                   <div class="flex gap-3">
                     <div class="w-20 h-20 flex-shrink-0 bg-gradient-to-br from-uit-green-light/30 to-uit-green/30 rounded-lg overflow-hidden">
                       {item.image ? (
@@ -431,6 +319,7 @@ const categoryStats = categories.slice(1).map(cat => ({
   <script>
     // Search functionality
     const searchInput = document.getElementById('searchInput') as HTMLInputElement;
+    const searchButton = document.getElementById('searchButton') as HTMLButtonElement;
     const newsItems = document.querySelectorAll('.news-item') as NodeListOf<HTMLElement>;
     const newsCount = document.getElementById('newsCount') as HTMLElement;
     const noResults = document.getElementById('noResults') as HTMLElement;
@@ -448,14 +337,20 @@ const categoryStats = categories.slice(1).map(cat => ({
       let visibleCount = 0;
       
       newsItems.forEach(item => {
-        const category = item.dataset.category || '';
-        const title = item.querySelector('h3')?.textContent?.toLowerCase() || '';
-        const excerpt = item.querySelector('p')?.textContent?.toLowerCase() || '';
+        const category = (item.dataset.category || '').toLowerCase();
+        const title = (item.querySelector('.news-title')?.textContent || '').toLowerCase();
+        const excerpt = (item.querySelector('.news-excerpt')?.textContent || '').toLowerCase();
         
-        const matchesCategory = currentCategory === 'Semua' || category === currentCategory;
+        // Get author from the meta section
+        const authorSpan = item.querySelector('.flex.items-center span');
+        const author = (authorSpan?.textContent || '').toLowerCase();
+        
+        const matchesCategory = currentCategory === 'Semua' || category === currentCategory.toLowerCase();
         const matchesSearch = !currentSearch || 
           title.includes(currentSearch) || 
-          excerpt.includes(currentSearch);
+          excerpt.includes(currentSearch) ||
+          category.includes(currentSearch) ||
+          author.includes(currentSearch);
         
         if (matchesCategory && matchesSearch) {
           item.style.display = 'block';
@@ -477,8 +372,28 @@ const categoryStats = categories.slice(1).map(cat => ({
     // Search input handler
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
-        currentSearch = (e.target as HTMLInputElement).value.toLowerCase();
+        currentSearch = (e.target as HTMLInputElement).value.toLowerCase().trim();
         filterNews();
+      });
+      
+      // Handle Enter key
+      searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          currentSearch = searchInput.value.toLowerCase().trim();
+          filterNews();
+        }
+      });
+    }
+
+    // Search button handler
+    if (searchButton) {
+      searchButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (searchInput) {
+          currentSearch = searchInput.value.toLowerCase().trim();
+          filterNews();
+        }
       });
     }
 
@@ -520,4 +435,6 @@ const categoryStats = categories.slice(1).map(cat => ({
       position: sticky;
     }
   </style>
+
+  <Footer slot="footer" />
 </BaseLayout>
