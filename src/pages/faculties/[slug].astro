@@ -1,0 +1,47 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import { getFakultas, getAllFakultas } from "../../lib/strapi";
+import FakultasLayoutModern from "../../components/fakultas/FakultasLayoutModern.astro";
+import FakultasLayoutClassic from "../../components/fakultas/FakultasLayoutClassic.astro";
+import FakultasLayoutMinimal from "../../components/fakultas/FakultasLayoutMinimal.astro";
+
+// Generate static paths for all fakultas
+export async function getStaticPaths() {
+  try {
+    const fakultas = await getAllFakultas();
+    return fakultas.map((fak) => ({
+      params: { slug: fak.slug },
+      props: { fakultas: fak },
+    }));
+  } catch (error) {
+    console.error("Error generating fakultas paths:", error);
+    return [];
+  }
+}
+
+const { fakultas } = Astro.props;
+
+// Pilih layout berdasarkan setting di Strapi, default ke modern
+const layoutType = fakultas.layout || "modern";
+
+// Map layout type ke komponen
+const layoutComponents = {
+  modern: FakultasLayoutModern,
+  classic: FakultasLayoutClassic,
+  minimal: FakultasLayoutMinimal,
+};
+
+const LayoutComponent = layoutComponents[layoutType] || FakultasLayoutModern;
+---
+
+<BaseLayout
+  title={`${fakultas.name} - Universitas Indonesia Timur`}
+  description={fakultas.profile || fakultas.description}
+>
+  <Header slot="header" />
+  <LayoutComponent fakultas={fakultas} />
+  <Footer slot="footer" />
+</BaseLayout>
+

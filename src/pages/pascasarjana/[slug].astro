@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import { getPascasarjana, getAllPascasarjana } from "../../lib/strapi";
+import PascasarjanaLayout from "../../components/pascasarjana/PascasarjanaLayout.astro";
+
+// Generate static paths for all pascasarjana
+export async function getStaticPaths() {
+  try {
+    const pascasarjana = await getAllPascasarjana();
+    return pascasarjana.map((pasca) => ({
+      params: { slug: pasca.slug },
+      props: { pascasarjana: pasca },
+    }));
+  } catch (error) {
+    console.error("Error generating pascasarjana paths:", error);
+    return [];
+  }
+}
+
+const { pascasarjana } = Astro.props;
+---
+
+<BaseLayout
+  title={`${pascasarjana.name} - Universitas Indonesia Timur`}
+  description={pascasarjana.description}
+>
+  <Header slot="header" />
+  <PascasarjanaLayout pascasarjana={pascasarjana} />
+  <Footer slot="footer" />
+</BaseLayout>

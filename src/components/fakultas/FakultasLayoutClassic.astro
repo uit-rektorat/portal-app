@@ -1,0 +1,330 @@
+---
+import { parseMarkdownWithClasses } from '../../lib/markdown';
+
+// Layout Classic - Traditional academic layout dengan sidebar
+const { fakultas } = Astro.props;
+
+// Parse markdown for rich text fields
+const visionHtml = parseMarkdownWithClasses(fakultas.vision || '');
+const missionHtml = parseMarkdownWithClasses(fakultas.mission || '');
+const profileHtml = parseMarkdownWithClasses(fakultas.profile || '');
+---
+
+<!-- Header dengan Breadcrumb -->
+<div class="bg-gray-100 py-4 border-b">
+  <div class="container mx-auto px-4">
+    <nav class="flex items-center text-sm text-gray-600">
+      <a href="/" class="hover:text-uit-green">Beranda</a>
+      <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+      </svg>
+      <a href="/akademik" class="hover:text-uit-green">Akademik</a>
+      <svg class="w-4 h-4 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+      </svg>
+      <span class="text-uit-green font-medium">{fakultas.name}</span>
+    </nav>
+  </div>
+</div>
+
+<!-- Hero Banner -->
+<section class="bg-gradient-to-r from-uit-green-dark to-uit-green text-white py-16">
+  <div class="container mx-auto px-4">
+    <div class="flex items-center space-x-4 mb-6">
+      {
+        fakultas.logo && (
+          <img
+            src={fakultas.logo}
+            alt={`Logo ${fakultas.name}`}
+            class="w-20 h-20 bg-white rounded-lg p-3 shadow-lg"
+          />
+        )
+      }
+      <div>
+        <p class="text-uit-green-light text-sm font-medium uppercase tracking-wide mb-2">
+          Fakultas
+        </p>
+        <h1 class="text-4xl md:text-5xl font-bold">{fakultas.name}</h1>
+      </div>
+    </div>
+    {fakultas.tagline && <p class="text-xl text-white/90 max-w-3xl">{fakultas.tagline}</p>}
+  </div>
+</section>
+
+<div class="container mx-auto px-4 py-12">
+  <div class="grid md:grid-cols-12 gap-8">
+    <!-- Main Content -->
+    <div class="md:col-span-8">
+      <!-- Profile Section -->
+      <section class="bg-white rounded-lg shadow-md p-8 mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-2 border-uit-green inline-block">
+          Profil Fakultas
+        </h2>
+        {
+          fakultas.profileImage && (
+            <div class="mb-6 rounded-lg overflow-hidden">
+              <img
+                src={fakultas.profileImage}
+                alt={`Profil ${fakultas.name}`}
+                class="w-full h-64 object-cover"
+              />
+            </div>
+          )
+        }
+        <div class="prose prose-lg text-gray-600" set:html={profileHtml}></div>
+      </section>
+
+      <!-- Visi Section -->
+      <section class="bg-white rounded-lg shadow-md p-8 mb-8">
+        <div class="flex items-center mb-6">
+          <div class="w-10 h-10 bg-uit-green rounded-full flex items-center justify-center mr-3">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              ></path>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              ></path>
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-800">Visi</h2>
+        </div>
+        <div class="pl-13 prose text-gray-600" set:html={visionHtml}></div>
+      </section>
+
+      <!-- Misi Section -->
+      <section class="bg-white rounded-lg shadow-md p-8 mb-8">
+        <div class="flex items-center mb-6">
+          <div class="w-10 h-10 bg-uit-green rounded-full flex items-center justify-center mr-3">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              ></path>
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-800">Misi</h2>
+        </div>
+        <div class="pl-13 prose text-gray-600" set:html={missionHtml}></div>
+      </section>
+
+      <!-- Fasilitas Section -->
+      {
+        fakultas.facilities && fakultas.facilities.length > 0 && (
+          <section class="bg-white rounded-lg shadow-md p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-2 border-uit-green inline-block">
+              Fasilitas
+            </h2>
+            <div class="space-y-6">
+              {fakultas.facilities.map((facility) => (
+                <div class="border-l-4 border-uit-green pl-6 py-2">
+                  <h3 class="text-lg font-bold text-gray-800 mb-2">
+                    {facility.name}
+                  </h3>
+                  <p class="text-gray-600">{facility.description}</p>
+                  {facility.image && (
+                    <div class="mt-4 rounded-lg overflow-hidden">
+                      <img
+                        src={facility.image}
+                        alt={facility.name}
+                        class="w-full h-48 object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      <!-- Program Studi Section -->
+      {
+        fakultas.programs && fakultas.programs.length > 0 && (
+          <section class="bg-white rounded-lg shadow-md p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b-2 border-uit-green inline-block">
+              Program Studi
+            </h2>
+            <div class="space-y-4">
+              {fakultas.programs.map((program) => (
+                <div class="border rounded-lg p-6 hover:border-uit-green transition-colors">
+                  <div class="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 class="text-lg font-bold text-gray-800">
+                        {program.name}
+                      </h3>
+                      <span class="inline-block mt-1 px-3 py-1 bg-uit-green text-white text-xs font-medium rounded">
+                        {program.degree}
+                      </span>
+                    </div>
+                    {program.accreditation && (
+                      <div class="text-right">
+                        <p class="text-xs text-gray-600">Akreditasi</p>
+                        <p class="text-lg font-bold text-uit-green">
+                          {program.accreditation}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  {program.description && (
+                    <div class="text-gray-600 text-sm mb-3" set:html={parseMarkdownWithClasses(program.description)}></div>
+                  )}
+                  {program.link && (
+                    <a
+                      href={program.link}
+                      class="text-uit-green hover:text-uit-green-dark font-medium text-sm inline-flex items-center"
+                    >
+                      Selengkapnya
+                      <svg
+                        class="w-4 h-4 ml-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )
+      }
+    </div>
+
+    <!-- Sidebar -->
+    <div class="md:col-span-4">
+      <!-- Struktur Organisasi -->
+      {
+        fakultas.dean && (
+          <section class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b">
+              Dekan
+            </h3>
+            <div class="text-center">
+              {fakultas.dean.photo && (
+                <div class="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden border-4 border-uit-green">
+                  <img
+                    src={fakultas.dean.photo}
+                    alt={fakultas.dean.name}
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <h4 class="font-bold text-gray-800">{fakultas.dean.name}</h4>
+              {fakultas.dean.title && (
+                <p class="text-uit-green text-sm font-medium mt-1">
+                  {fakultas.dean.title}
+                </p>
+              )}
+              {fakultas.dean.education && (
+                <p class="text-gray-600 text-xs mt-2">
+                  {fakultas.dean.education}
+                </p>
+              )}
+            </div>
+          </section>
+        )
+      }
+
+      <!-- Kepala Prodi -->
+      {
+        fakultas.heads && fakultas.heads.length > 0 && (
+          <section class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b">
+              Kepala Program Studi
+            </h3>
+            <div class="space-y-4">
+              {fakultas.heads.map((head) => (
+                <div class="border-b pb-4 last:border-b-0 last:pb-0">
+                  <h4 class="font-bold text-gray-800 text-sm">{head.name}</h4>
+                  {head.title && (
+                    <p class="text-uit-green text-xs font-medium">
+                      {head.title}
+                    </p>
+                  )}
+                  <p class="text-gray-700 text-xs mt-1">{head.program}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      <!-- Quick Info -->
+      {
+        fakultas.stats && fakultas.stats.length > 0 && (
+          <section class="bg-gradient-to-br from-uit-green to-uit-green-light rounded-lg shadow-md p-6 text-white mb-6">
+            <h3 class="text-xl font-bold mb-4">Statistik</h3>
+            <div class="space-y-4">
+              {fakultas.stats.map((stat) => (
+                <div class="flex items-center justify-between">
+                  <span class="text-sm">{stat.label}</span>
+                  <span class="text-2xl font-bold">{stat.value}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      <!-- Prestasi -->
+      {
+        fakultas.achievements && fakultas.achievements.length > 0 && (
+          <section class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b">
+              Prestasi Terkini
+            </h3>
+            <div class="space-y-4">
+              {fakultas.achievements.slice(0, 3).map((achievement) => (
+                <div class="text-sm">
+                  <h4 class="font-bold text-gray-800 mb-1">
+                    {achievement.title}
+                  </h4>
+                  <p class="text-gray-600 text-xs mb-1">
+                    {achievement.description}
+                  </p>
+                  {achievement.year && (
+                    <span class="text-uit-green text-xs font-medium">
+                      {achievement.year}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      <!-- CTA Box -->
+      <section class="bg-uit-green-light/10 border-2 border-uit-green rounded-lg p-6 text-center">
+        <h3 class="text-lg font-bold text-gray-800 mb-3">
+          Informasi Lebih Lanjut
+        </h3>
+        <p class="text-gray-600 text-sm mb-4">
+          Hubungi kami untuk informasi lengkap tentang pendaftaran
+        </p>
+        <a
+          href="#"
+          class="block w-full bg-uit-green text-white py-2 px-4 rounded-lg hover:bg-uit-green-dark transition-colors font-medium"
+        >
+          Hubungi Kami
+        </a>
+      </section>
+    </div>
+  </div>
+</div>

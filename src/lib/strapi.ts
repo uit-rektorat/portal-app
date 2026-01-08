@@ -99,6 +99,83 @@ export interface Profile {
   history: string;
 }
 
+export interface Fakultas {
+  id: string;
+  name: string;
+  slug: string;
+  tagline?: string;
+  profile: string;
+  vision: string;
+  mission: string;
+  logo?: string;
+  heroImage?: string;
+  profileImage?: string;
+  layout?: 'modern' | 'classic' | 'minimal';
+  stats?: Array<{
+    label: string;
+    value: string;
+  }>;
+  facilities?: Array<{
+    name: string;
+    description: string;
+    image?: string;
+  }>;
+  achievements?: Array<{
+    title: string;
+    description: string;
+    year?: string;
+  }>;
+  activities?: Array<{
+    title: string;
+    description: string;
+    date?: string;
+    image?: string;
+  }>;
+  dean?: {
+    name: string;
+    title?: string;
+    photo?: string;
+    education?: string;
+  };
+  heads?: Array<{
+    name: string;
+    title?: string;
+    program: string;
+    photo?: string;
+    education?: string;
+  }>;
+  programs?: Array<{
+    name: string;
+    degree: string;
+    description?: string;
+    accreditation?: string;
+    link?: string;
+  }>;
+}
+
+export interface Pascasarjana {
+  id: string;
+  name: string;
+  slug: string;
+  tagline?: string;
+  description: string;
+  heroImage?: string;
+  programs: Array<{
+    name: string;
+    degree: string;
+    description?: string;
+    accreditation?: string;
+    duration?: string;
+    tuition?: string;
+    coordinator?: {
+      name: string;
+      photo?: string;
+      title?: string;
+      education?: string;
+    };
+  }>;
+}
+
 // Fetch Hero Slides from Strapi REST API
 export const getHeroSlides = async (): Promise<Hero[]> => {
   try {
@@ -173,7 +250,10 @@ export const getNews = async (limit: number = 6): Promise<News[]> => {
         title: title,
         excerpt: attrs.excerpt || '',
         image: imagePath ? `${STRAPI_URL}${imagePath}` : undefined,
-        publishedAt: attrs.publishedAt || new Date().toISOString(),
+        // Using custom 'published' field for news date (for initial launch)
+        publishedAt: attrs.published || attrs.createdAt || new Date().toISOString(),
+        // FUTURE: Uncomment below when switching back to system publishedAt
+        // publishedAt: attrs.publishedAt || attrs.createdAt || new Date().toISOString(),
         slug: slug,
         category: attrs.category || attrs.Category || 'Berita',
         author: attrs.author?.data?.attributes?.name || attrs.author?.name || attrs.author || 'Admin',
@@ -218,7 +298,10 @@ export const getNewsBySlug = async (slug: string): Promise<News | null> => {
       title: title,
       excerpt: attrs.excerpt || '',
       image: imagePath ? `${STRAPI_URL}${imagePath}` : undefined,
-      publishedAt: attrs.publishedAt || new Date().toISOString(),
+      // Using custom 'published' field for news date (for initial launch)
+      publishedAt: attrs.published || attrs.createdAt || new Date().toISOString(),
+      // FUTURE: Uncomment below when switching back to system publishedAt
+      // publishedAt: attrs.publishedAt || attrs.createdAt || new Date().toISOString(),
       slug: itemSlug,
       category: attrs.category || attrs.Category || 'Berita',
       author: attrs.author?.data?.attributes?.name || attrs.author?.name || attrs.author || 'Admin',
@@ -346,6 +429,248 @@ export const getProfile = async (): Promise<Profile | null> => {
     };
   } catch (error) {
     console.error('Error fetching profile:', error);
+    return null;
+  }
+};
+
+// Fetch all Fakultas
+export const getAllFakultas = async (): Promise<Fakultas[]> => {
+  try {
+    const data = await fetchStrapi('/faculties?populate[0]=logo&populate[1]=heroImage&populate[2]=profileImage&populate[3]=Statistics&populate[4]=Facilities.image&populate[5]=Achievements&populate[6]=Activities.image&populate[7]=Dean.photo&populate[8]=Heads.photo&populate[9]=Programs&sort=name:asc');
+
+    const fakultas = data.data?.map((item: any) => {
+      const attrs = item.attributes || item;
+      
+      // Helper to get image URL
+      const getImageUrl = (image: any) => {
+        if (!image) return undefined;
+        const url = image?.url || image?.data?.attributes?.url;
+        return url ? `${STRAPI_URL}${url}` : undefined;
+      };
+
+      return {
+        id: item.id.toString(),
+        name: attrs.name || item.name || '',
+        slug: attrs.slug || item.slug || '',
+        tagline: attrs.tagline || item.tagline || '',
+        profile: attrs.profile || item.profile || '',
+        vision: attrs.vision || item.vision || '',
+        mission: attrs.mission || item.mission || '',
+        logo: getImageUrl(attrs.logo || item.logo),
+        heroImage: getImageUrl(attrs.heroImage || item.heroImage),
+        profileImage: getImageUrl(attrs.profileImage || item.profileImage),
+        layout: attrs.layout || item.layout || 'modern',
+        stats: attrs.Statistics || attrs.stats || item.Statistics || [],
+        facilities: (attrs.Facilities || attrs.facilities || item.Facilities || []).map((f: any) => ({
+          name: f.name || '',
+          description: f.description || '',
+          image: getImageUrl(f.image),
+        })),
+        achievements: (attrs.Achievements || attrs.achievements || item.Achievements || []).map((a: any) => ({
+          title: a.title || '',
+          description: a.description || '',
+          year: a.year || '',
+        })),
+        activities: (attrs.Activities || attrs.activities || item.Activities || []).map((act: any) => ({
+          title: act.title || '',
+          description: act.description || '',
+          date: act.date || '',
+          image: getImageUrl(act.image),
+        })),
+        dean: (attrs.Dean || attrs.dean || item.Dean) ? {
+          name: (attrs.Dean || attrs.dean || item.Dean).name || '',
+          title: (attrs.Dean || attrs.dean || item.Dean).title || '',
+          photo: getImageUrl((attrs.Dean || attrs.dean || item.Dean).photo),
+          education: (attrs.Dean || attrs.dean || item.Dean).education || '',
+        } : undefined,
+        heads: (attrs.Heads || attrs.heads || item.Heads || []).map((h: any) => ({
+          name: h.name || '',
+          title: h.title || '',
+          program: h.program || '',
+          photo: getImageUrl(h.photo),
+          education: h.education || '',
+        })),
+        programs: (attrs.Programs || attrs.programs || item.Programs || []).map((p: any) => ({
+          name: p.name || '',
+          degree: p.degree || '',
+          description: p.description || '',
+          accreditation: p.accreditation || '',
+          link: p.link || '',
+        })),
+      };
+    }) || [];
+
+    return fakultas;
+  } catch (error) {
+    console.error('Error fetching fakultas:', error);
+    return [];
+  }
+};
+
+// Fetch single Fakultas by slug
+export const getFakultas = async (slug: string): Promise<Fakultas | null> => {
+  try {
+    const data = await fetchStrapi(`/faculties?filters[slug][$eq]=${slug}&populate[0]=logo&populate[1]=heroImage&populate[2]=profileImage&populate[3]=Statistics&populate[4]=Facilities.image&populate[5]=Achievements&populate[6]=Activities.image&populate[7]=Dean.photo&populate[8]=Heads.photo&populate[9]=Programs`);
+
+    if (!data.data || data.data.length === 0) {
+      return null;
+    }
+
+    const item = data.data[0];
+    const attrs = item.attributes || item;
+
+    // Helper to get image URL
+    const getImageUrl = (image: any) => {
+      if (!image) return undefined;
+      const url = image?.url || image?.data?.attributes?.url;
+      return url ? `${STRAPI_URL}${url}` : undefined;
+    };
+
+    return {
+      id: item.id.toString(),
+      name: attrs.name || item.name || '',
+      slug: attrs.slug || item.slug || '',
+      tagline: attrs.tagline || item.tagline || '',
+      profile: attrs.profile || item.profile || '',
+      vision: attrs.vision || item.vision || '',
+      mission: attrs.mission || item.mission || '',
+      logo: getImageUrl(attrs.logo || item.logo),
+      heroImage: getImageUrl(attrs.heroImage || item.heroImage),
+      profileImage: getImageUrl(attrs.profileImage || item.profileImage),
+      layout: attrs.layout || item.layout || 'modern',
+      stats: attrs.Statistics || attrs.stats || item.Statistics || [],
+      facilities: (attrs.Facilities || attrs.facilities || item.Facilities || []).map((f: any) => ({
+        name: f.name || '',
+        description: f.description || '',
+        image: getImageUrl(f.image),
+      })),
+      achievements: (attrs.Achievements || attrs.achievements || item.Achievements || []).map((a: any) => ({
+        title: a.title || '',
+        description: a.description || '',
+        year: a.year || '',
+      })),
+      activities: (attrs.Activities || attrs.activities || item.Activities || []).map((act: any) => ({
+        title: act.title || '',
+        description: act.description || '',
+        date: act.date || '',
+        image: getImageUrl(act.image),
+      })),
+      dean: (attrs.Dean || attrs.dean || item.Dean) ? {
+        name: (attrs.Dean || attrs.dean || item.Dean).name || '',
+        title: (attrs.Dean || attrs.dean || item.Dean).title || '',
+        photo: getImageUrl((attrs.Dean || attrs.dean || item.Dean).photo),
+        education: (attrs.Dean || attrs.dean || item.Dean).education || '',
+      } : undefined,
+      heads: (attrs.Heads || attrs.heads || item.Heads || []).map((h: any) => ({
+        name: h.name || '',
+        title: h.title || '',
+        program: h.program || '',
+        photo: getImageUrl(h.photo),
+        education: h.education || '',
+      })),
+      programs: (attrs.Programs || attrs.programs || item.Programs || []).map((p: any) => ({
+        name: p.name || '',
+        degree: p.degree || '',
+        description: p.description || '',
+        accreditation: p.accreditation || '',
+        link: p.link || '',
+      })),
+    };
+  } catch (error) {
+    console.error('Error fetching fakultas:', error);
+    return null;
+  }
+};
+
+// Fetch all Pascasarjana
+export const getAllPascasarjana = async (): Promise<Pascasarjana[]> => {
+  try {
+    const data = await fetchStrapi('/graduate-programs?populate[0]=heroImage&populate[1]=Programs.Coordinator.photo&sort=name:asc');
+
+    const pascasarjana = data.data?.map((item: any) => {
+      const attrs = item.attributes || item;
+      
+      // Helper to get image URL
+      const getImageUrl = (image: any) => {
+        if (!image) return undefined;
+        const url = image?.url || image?.data?.attributes?.url;
+        return url ? `${STRAPI_URL}${url}` : undefined;
+      };
+
+      return {
+        id: item.id.toString(),
+        name: attrs.name || item.name || '',
+        slug: attrs.slug || item.slug || '',
+        tagline: attrs.tagline || item.tagline || '',
+        description: attrs.description || item.description || '',
+        heroImage: getImageUrl(attrs.heroImage || item.heroImage),
+        programs: (attrs.Programs || attrs.programs || item.Programs || []).map((p: any) => ({
+          name: p.name || '',
+          degree: p.degree || '',
+          description: p.description || '',
+          accreditation: p.accreditation || '',
+          duration: p.duration || '',
+          tuition: p.tuition || '',
+          coordinator: (p.Coordinator || p.coordinator) ? {
+            name: (p.Coordinator || p.coordinator).name || '',
+            photo: getImageUrl((p.Coordinator || p.coordinator).photo),
+            title: (p.Coordinator || p.coordinator).title || '',
+            education: (p.Coordinator || p.coordinator).education || '',
+          } : undefined,
+        })),
+      };
+    }) || [];
+
+    return pascasarjana;
+  } catch (error) {
+    console.error('Error fetching pascasarjana:', error);
+    return [];
+  }
+};
+
+// Fetch single Pascasarjana by slug
+export const getPascasarjana = async (slug: string): Promise<Pascasarjana | null> => {
+  try {
+    const data = await fetchStrapi(`/graduate-programs?filters[slug][$eq]=${slug}&populate[0]=heroImage&populate[1]=Programs.Coordinator.photo`);
+
+    if (!data.data || data.data.length === 0) {
+      return null;
+    }
+
+    const item = data.data[0];
+    const attrs = item.attributes || item;
+
+    // Helper to get image URL
+    const getImageUrl = (image: any) => {
+      if (!image) return undefined;
+      const url = image?.url || image?.data?.attributes?.url;
+      return url ? `${STRAPI_URL}${url}` : undefined;
+    };
+
+    return {
+      id: item.id.toString(),
+      name: attrs.name || item.name || '',
+      slug: attrs.slug || item.slug || '',
+      tagline: attrs.tagline || item.tagline || '',
+      description: attrs.description || item.description || '',
+      heroImage: getImageUrl(attrs.heroImage || item.heroImage),
+      programs: (attrs.Programs || attrs.programs || item.Programs || []).map((p: any) => ({
+        name: p.name || '',
+        degree: p.degree || '',
+        description: p.description || '',
+        accreditation: p.accreditation || '',
+        duration: p.duration || '',
+        tuition: p.tuition || '',
+        coordinator: (p.Coordinator || p.coordinator) ? {
+          name: (p.Coordinator || p.coordinator).name || '',
+          photo: getImageUrl((p.Coordinator || p.coordinator).photo),
+          title: (p.Coordinator || p.coordinator).title || '',
+          education: (p.Coordinator || p.coordinator).education || '',
+        } : undefined,
+      })),
+    };
+  } catch (error) {
+    console.error('Error fetching pascasarjana:', error);
     return null;
   }
 };

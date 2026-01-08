@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import { parseMarkdownWithClasses } from '../lib/markdown';
 
 // Import Strapi functions (we call them after defaults to avoid TDZ)
 import { getProfile, getLeaders } from '../lib/strapi';
@@ -32,6 +33,10 @@ const profileData = await getProfile();
 const leadersData = await getLeaders();
 const profile = profileData || defaultProfile;
 const leaders = leadersData.length > 0 ? leadersData : defaultLeaders;
+
+// Parse markdown content
+const historyHtml = parseMarkdownWithClasses(profile.history);
+const visionHtml = parseMarkdownWithClasses(profile.vision);
 ---
 
 <BaseLayout
@@ -90,15 +95,7 @@ const leaders = leadersData.length > 0 ? leadersData : defaultLeaders;
         <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-8 text-center">Sejarah</h2>
         
         <div class="prose prose-lg max-w-none">
-          {
-            profile.history
-              .split("\n\n")
-              .map((paragraph) => (
-                <p class="text-gray-700 leading-relaxed mb-6 text-lg">
-                  {paragraph}
-                </p>
-              ))
-          }
+          <div class="text-gray-700 leading-relaxed" set:html={historyHtml} />
         </div>
       </div>
     </div>
@@ -136,9 +133,7 @@ const leaders = leadersData.length > 0 ? leadersData : defaultLeaders;
               </div>
               <h2 class="text-3xl font-bold text-gray-900">Visi</h2>
             </div>
-            <p class="text-lg text-gray-700 leading-relaxed">
-              {profile.vision}
-            </p>
+            <div class="prose text-lg text-gray-700 leading-relaxed" set:html={visionHtml} />
           </div>
 
           <!-- Misi -->

@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-  output: 'static',
+  output: 'static', // Static mode for better performance with webhook rebuild
   vite: {
     plugins: [tailwindcss()]
   }

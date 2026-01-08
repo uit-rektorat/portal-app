@@ -3,20 +3,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { getNewsBySlug, getNews } from '../../lib/strapi';
+import { parseMarkdownWithClasses } from '../../lib/markdown';
 
 // Generate static pages for each news slug at build time
-export const prerender = true;
-
 export async function getStaticPaths() {
-  try {
-    const all = await getNews(100);
-    return all.map((n) => ({ params: { slug: n.slug } }));
-  } catch (err) {
-    // If fetching slugs fails (e.g., Strapi unavailable), return no paths.
-    // Build will still succeed but dynamic pages won't be generated.
-    console.warn('getStaticPaths: failed to fetch slugs', err);
-    return [];
-  }
+  const allNews = await getNews(100);
+  return allNews.map((newsItem) => ({
+    params: { slug: newsItem.slug },
+  }));
 }
 
 interface NewsItem {
@@ -47,6 +41,9 @@ if (!newsItem) {
 // Fetch related news by category
 const allNews = await getNews(100);
 const relatedNews = allNews.filter(n => n.category === newsItem.category && n.slug !== newsItem.slug).slice(0, 3);
+
+// Parse markdown content to HTML
+const contentHtml = parseMarkdownWithClasses(newsItem.content);
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -191,7 +188,7 @@ const categoryColors: Record<string, string> = {
 
         <!-- Article Content -->
         <div class="prose prose-lg max-w-none">
-          <div class="text-gray-700 leading-relaxed" set:html={newsItem.content} />
+          <div class="text-gray-700 leading-relaxed" set:html={contentHtml} />
         </div>
 
         <!-- Tags -->

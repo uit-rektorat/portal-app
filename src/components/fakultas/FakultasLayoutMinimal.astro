@@ -1,0 +1,365 @@
+---
+import { parseMarkdownWithClasses } from '../../lib/markdown';
+
+// Layout Minimal - Clean and minimalist design
+const { fakultas } = Astro.props;
+
+// Parse markdown for rich text fields
+const visionHtml = parseMarkdownWithClasses(fakultas.vision || '');
+const missionHtml = parseMarkdownWithClasses(fakultas.mission || '');
+const profileHtml = parseMarkdownWithClasses(fakultas.profile || '');
+---
+
+<!-- Simple Hero -->
+<section class="bg-white border-b-4 border-uit-green">
+  <div class="container mx-auto px-4 py-16">
+    <div class="max-w-4xl mx-auto text-center">
+      {
+        fakultas.logo && (
+          <img
+            src={fakultas.logo}
+            alt={`Logo ${fakultas.name}`}
+            class="w-24 h-24 mx-auto mb-6"
+          />
+        )
+      }
+      <p class="text-uit-green text-sm font-medium uppercase tracking-wider mb-2">
+        Fakultas
+      </p>
+      <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+        {fakultas.name}
+      </h1>
+      {fakultas.tagline && <p class="text-xl text-gray-600">{fakultas.tagline}</p>}
+    </div>
+  </div>
+</section>
+
+<div class="container mx-auto px-4 py-16 max-w-5xl">
+  <!-- Profile -->
+  <section class="mb-20">
+    <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">
+      Tentang Kami
+    </h2>
+    <div class="prose prose-lg mx-auto text-gray-600" set:html={profileHtml}></div>
+    {
+      fakultas.profileImage && (
+        <div class="mt-10 rounded-2xl overflow-hidden shadow-2xl">
+          <img
+            src={fakultas.profileImage}
+            alt={`Profil ${fakultas.name}`}
+            class="w-full h-96 object-cover"
+          />
+        </div>
+      )
+    }
+  </section>
+
+  <!-- Visi & Misi - Side by Side -->
+  <section class="mb-20 py-16 bg-gray-50 -mx-4 md:-mx-8 px-4 md:px-8">
+    <div class="max-w-5xl mx-auto">
+      <div class="grid md:grid-cols-2 gap-16">
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900 mb-6">Visi</h2>
+          <div class="prose text-gray-600" set:html={visionHtml}></div>
+        </div>
+        <div>
+          <h2 class="text-3xl font-bold text-gray-900 mb-6">Misi</h2>
+          <div class="prose text-gray-600" set:html={missionHtml}></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Program Studi - Minimalist Cards -->
+  {
+    fakultas.programs && fakultas.programs.length > 0 && (
+      <section class="mb-20">
+        <h2 class="text-3xl font-bold text-gray-900 mb-12 text-center">
+          Program Studi
+        </h2>
+        <div class="space-y-6">
+          {fakultas.programs.map((program, index) => (
+            <div class="group">
+              <div class="border-l-4 border-uit-green pl-8 py-6 hover:bg-gray-50 transition-colors">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center space-x-4 mb-3">
+                      <span class="text-3xl font-bold text-gray-200 group-hover:text-uit-green-light transition-colors">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <div>
+                        <h3 class="text-xl font-bold text-gray-900">
+                          {program.name}
+                        </h3>
+                        <span class="text-sm text-uit-green font-medium">
+                          {program.degree}
+                        </span>
+                      </div>
+                    </div>
+                    {program.description && (
+                      <div class="text-gray-600 mb-3" set:html={parseMarkdownWithClasses(program.description)}></div>
+                    )}
+                  </div>
+                  {program.accreditation && (
+                    <div class="ml-6 text-center">
+                      <div class="w-16 h-16 rounded-full bg-uit-green flex items-center justify-center">
+                        <span class="text-2xl font-bold text-white">
+                          {program.accreditation}
+                        </span>
+                      </div>
+                      <p class="text-xs text-gray-600 mt-2">Akreditasi</p>
+                    </div>
+                  )}
+                </div>
+                {program.link && (
+                  <a
+                    href={program.link}
+                    class="inline-flex items-center text-uit-green hover:text-uit-green-dark font-medium mt-3"
+                  >
+                    Lihat Detail
+                    <svg
+                      class="w-4 h-4 ml-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M17 8l4 4m0 0l-4 4m4-4H3"
+                      />
+                    </svg>
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Struktur Organisasi - Minimal -->
+  {
+    (fakultas.dean || fakultas.heads) && (
+      <section class="mb-20">
+        <h2 class="text-3xl font-bold text-gray-900 mb-12 text-center">
+          Kepemimpinan
+        </h2>
+
+        <div class="space-y-12">
+          {/* Dekan */}
+          {fakultas.dean && (
+            <div class="text-center">
+              {fakultas.dean.photo && (
+                <div class="w-40 h-40 mx-auto mb-6 rounded-full overflow-hidden border-4 border-gray-200">
+                  <img
+                    src={fakultas.dean.photo}
+                    alt={fakultas.dean.name}
+                    class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all"
+                  />
+                </div>
+              )}
+              <h3 class="text-2xl font-bold text-gray-900">
+                {fakultas.dean.name}
+              </h3>
+              {fakultas.dean.title && (
+                <p class="text-uit-green font-medium mt-2">
+                  {fakultas.dean.title}
+                </p>
+              )}
+              <p class="text-gray-700 font-medium mt-1">DEKAN</p>
+              {fakultas.dean.education && (
+                <p class="text-gray-600 text-sm mt-2">
+                  {fakultas.dean.education}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Kepala Prodi */}
+          {fakultas.heads && fakultas.heads.length > 0 && (
+            <div>
+              <h3 class="text-xl font-bold text-gray-900 mb-8 text-center">
+                Kepala Program Studi
+              </h3>
+              <div class={`grid gap-12 ${fakultas.heads.length === 1 ? 'max-w-xs mx-auto' : fakultas.heads.length === 2 ? 'md:grid-cols-2 max-w-2xl mx-auto' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
+                {fakultas.heads.map((head) => (
+                  <div class="text-center">
+                    {head.photo && (
+                      <div class="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden border-2 border-gray-200">
+                        <img
+                          src={head.photo}
+                          alt={head.name}
+                          class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all"
+                        />
+                      </div>
+                    )}
+                    <h4 class="font-bold text-gray-900">{head.name}</h4>
+                    {head.title && (
+                      <p class="text-uit-green text-sm font-medium mt-1">
+                        {head.title}
+                      </p>
+                    )}
+                    <p class="text-gray-700 text-sm mt-1">{head.program}</p>
+                    {head.education && (
+                      <p class="text-gray-600 text-xs mt-2">
+                        {head.education}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Fasilitas - Grid Minimal -->
+  {
+    fakultas.facilities && fakultas.facilities.length > 0 && (
+      <section class="mb-20">
+        <h2 class="text-3xl font-bold text-gray-900 mb-12 text-center">
+          Fasilitas
+        </h2>
+        <div class="grid md:grid-cols-2 gap-8">
+          {fakultas.facilities.map((facility) => (
+            <div class="group">
+              {facility.image && (
+                <div class="mb-4 rounded-lg overflow-hidden">
+                  <img
+                    src={facility.image}
+                    alt={facility.name}
+                    class="w-full h-64 object-cover grayscale group-hover:grayscale-0 transition-all"
+                  />
+                </div>
+              )}
+              <h3 class="text-xl font-bold text-gray-900 mb-2">
+                {facility.name}
+              </h3>
+              <p class="text-gray-600">{facility.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Prestasi & Kegiatan - Timeline Style -->
+  {
+    (fakultas.achievements || fakultas.activities) && (
+      <section class="mb-20 py-16 bg-gray-50 -mx-4 md:-mx-8 px-4 md:px-8">
+        <div class="max-w-5xl mx-auto">
+          <h2 class="text-3xl font-bold text-gray-900 mb-12 text-center">
+            Prestasi & Kegiatan
+          </h2>
+
+          <div class="space-y-8">
+            {/* Prestasi */}
+            {fakultas.achievements &&
+              fakultas.achievements.length > 0 &&
+              fakultas.achievements.map((achievement) => (
+                <div class="flex items-start">
+                  <div class="flex-shrink-0 w-12 h-12 bg-uit-green rounded-full flex items-center justify-center mr-6">
+                    <svg
+                      class="w-6 h-6 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="text-lg font-bold text-gray-900 mb-1">
+                      {achievement.title}
+                    </h4>
+                    <p class="text-gray-600 mb-2">{achievement.description}</p>
+                    {achievement.year && (
+                      <span class="text-sm text-uit-green font-medium">
+                        {achievement.year}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+            {/* Kegiatan */}
+            {fakultas.activities &&
+              fakultas.activities.length > 0 &&
+              fakultas.activities.map((activity) => (
+                <div class="flex items-start">
+                  <div class="flex-shrink-0 w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center mr-6">
+                    <svg
+                      class="w-6 h-6 text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="text-lg font-bold text-gray-900 mb-1">
+                      {activity.title}
+                    </h4>
+                    <p class="text-gray-600 mb-2">{activity.description}</p>
+                    {activity.date && (
+                      <span class="text-sm text-gray-500">{activity.date}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Stats Bar -->
+  {
+    fakultas.stats && fakultas.stats.length > 0 && (
+      <section class="mb-20">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+          {fakultas.stats.map((stat) => (
+            <div class="text-center">
+              <div class="text-5xl font-bold text-uit-green mb-2">
+                {stat.value}
+              </div>
+              <div class="text-gray-600">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Simple CTA -->
+  <section class="text-center py-16 border-t border-b">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+      Bergabunglah dengan Kami
+    </h2>
+    <p class="text-gray-600 mb-8 max-w-2xl mx-auto">
+      Wujudkan cita-cita akademis Anda bersama {fakultas.name}
+    </p>
+    <a
+      href="#"
+      class="inline-block px-10 py-4 bg-uit-green text-white rounded-full font-medium hover:bg-uit-green-dark transition-colors"
+    >
+      Hubungi Kami
+    </a>
+  </section>
+</div>
