@@ -6,13 +6,22 @@ import HeroSlider from "../components/home/HeroSlider.astro";
 import QuickAccess from "../components/home/QuickAccess.astro";
 import CampusAdvantages from "../components/home/CampusAdvantages.astro";
 import CampusInfo from "../components/home/CampusInfo.astro";
+import Gallery from "../components/home/Gallery.astro";
 import Testimonials from "../components/home/Testimonials.astro";
 
 // ===== STRAPI CMS INTEGRATION =====
 // Uncomment these lines when your Strapi backend is ready and running
 // Make sure to set PUBLIC_STRAPI_URL in your .env file
-// import { getHeroSlides, getQuickAccess, getCampusAdvantages, getNews, getAgenda, getAnnouncements, getTestimonials } from '../lib/strapi';
-import { getHeroSlides, getQuickAccess, getNews, getAgenda, getAnnouncements, getTestimonials } from '../lib/strapi';
+// import { getHeroSlides, getQuickAccess, getCampusAdvantages, getNews, getAgenda, getAnnouncements, getTestimonials, getLatestGallery } from '../lib/strapi';
+import {
+  getHeroSlides,
+  getQuickAccess,
+  getNews,
+  getAgenda,
+  getAnnouncements,
+  getTestimonials,
+  getLatestGallery,
+} from "../lib/strapi";
 
 // Fetch data from Strapi
 const heroSlides = await getHeroSlides();
@@ -22,6 +31,7 @@ const news = await getNews(6);
 const agenda = await getAgenda(4);
 const announcements = await getAnnouncements(5);
 const testimonials = await getTestimonials();
+const gallery = await getLatestGallery(6);
 
 // Note: Component akan menggunakan data default jika tidak ada data dari Strapi
 ---
@@ -48,6 +58,10 @@ const testimonials = await getTestimonials();
   <!-- Informasi Kampus (Berita, Agenda, Pengumuman) -->
   <!-- Pass news={news} agenda={agenda} announcements={announcements} when Strapi is ready -->
   <CampusInfo news={news} agenda={agenda} announcements={announcements} />
+
+  <!-- Gallery -->
+  <!-- Pass gallery={gallery} when Strapi is ready -->
+  <Gallery gallery={gallery} />
 
   <!-- Testimoni -->
   <!-- Pass testimonials={testimonials} when Strapi is ready -->

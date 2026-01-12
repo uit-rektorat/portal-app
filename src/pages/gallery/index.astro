@@ -1,0 +1,632 @@
+---
+/**
+ * Gallery Full Page
+ * Complete gallery page with search, filtering, pagination, and lightbox functionality
+ */
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import { getGallery, getGalleryCategories, getGalleryProgramStudi, type Gallery } from "../../lib/strapi";
+
+interface GalleryCategory {
+    id: number | string;
+    name: string;
+    slug: string;
+    count?: number;
+}
+
+interface ProgramStudi {
+    id: number | string;
+    name: string;
+    slug: string;
+    count?: number;
+}
+
+// Get query parameters
+const url = new URL(Astro.request.url);
+const searchQuery = url.searchParams.get('search') || '';
+const categoryFilter = url.searchParams.get('category') || 'semua';
+const prodiFilter = url.searchParams.get('prodi') || '';
+const page = parseInt(url.searchParams.get('page') || '1');
+const itemsPerPage = 12;
+
+// Fetch data from Strapi
+let categories: GalleryCategory[] = [];
+let programStudiList: ProgramStudi[] = [];
+let filteredItems: Gallery[] = [];
+let totalItems = 0;
+let totalPages = 1;
+let currentItems: Gallery[] = [];
+
+try {
+    // Fetch categories and program studi
+    const [categoriesResult, programStudiResult] = await Promise.all([
+        getGalleryCategories(),
+        getGalleryProgramStudi()
+    ]);
+    
+    categories = [
+        { id: 'semua', name: 'Semua', slug: 'semua' },
+        ...categoriesResult
+    ];
+    
+    programStudiList = programStudiResult;
+
+    // Fetch gallery items with filters
+    const result = await getGallery(
+        itemsPerPage, 
+        categoryFilter !== 'semua' ? categoryFilter : undefined,
+        prodiFilter || undefined,
+        searchQuery || undefined,
+        page
+    );
+
+    currentItems = result.data;
+    totalItems = result.total;
+    totalPages = result.pageCount;
+
+} catch (error) {
+    console.error('Error fetching gallery data:', error);
+    
+    // Fallback data if Strapi fails
+    categories = [
+        { id: 'semua', name: 'Semua', slug: 'semua', count: 48 },
+        { id: 'umum', name: 'Umum', slug: 'umum', count: 12 },
+        { id: 'prestasi', name: 'Prestasi', slug: 'prestasi', count: 8 },
+        { id: 'fasilitas', name: 'Fasilitas', slug: 'fasilitas', count: 6 },
+        { id: 'kegiatan', name: 'Kegiatan', slug: 'kegiatan', count: 22 }
+    ];
+
+    programStudiList = [
+        { id: 'teknik-informatika', name: 'Teknik Informatika', slug: 'teknik-informatika', count: 15 },
+        { id: 'teknik-sipil', name: 'Teknik Sipil', slug: 'teknik-sipil', count: 8 },
+        { id: 'manajemen', name: 'Manajemen', slug: 'manajemen', count: 12 },
+        { id: 'akuntansi', name: 'Akuntansi', slug: 'akuntansi', count: 10 },
+        { id: 'hukum', name: 'Hukum', slug: 'hukum', count: 6 },
+        { id: 'pendidikan', name: 'Pendidikan', slug: 'pendidikan', count: 9 }
+    ];
+
+    // Use mock data as fallback
+    currentItems = [
+        {
+            id: "1",
+            title: "Wisuda Sarjana Periode I 2024",
+            image: "/images/gallery/wisuda-2024-1.jpg",
+            alt: "Wisuda Sarjana UIT 2024",
+            category: "kegiatan",
+            date: "2024-03-15",
+            description: "Upacara wisuda sarjana periode I tahun akademik 2023/2024"
+        },
+        {
+            id: "2",
+            title: "Seminar Nasional Teknologi AI",
+            image: "/images/gallery/seminar-ai.jpg",
+            alt: "Seminar Nasional AI",
+            category: "kegiatan",
+            programStudi: "teknik-informatika",
+            date: "2024-03-10",
+            description: "Seminar nasional tentang perkembangan teknologi artificial intelligence"
+        },
+        // Add more mock data...
+    ];
+    
+    totalItems = currentItems.length;
+    totalPages = Math.ceil(totalItems / itemsPerPage);
+}
+
+// Generate pagination URLs
+const baseUrl = '/gallery';
+const createPageUrl = (pageNum: number) => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set('search', searchQuery);
+    if (categoryFilter !== 'semua') params.set('category', categoryFilter);
+    if (prodiFilter) params.set('prodi', prodiFilter);
+    if (pageNum > 1) params.set('page', pageNum.toString());
+    const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+};
+---
+
+<BaseLayout
+    title="Galeri Kegiatan Kampus - Universitas Indonesia Timur"
+    description="Galeri foto dokumentasi berbagai kegiatan, prestasi, dan fasilitas Universitas Indonesia Timur"
+>
+    <Header slot="header" />
+
+    <!-- Page Content -->
+    <main class="min-h-screen bg-gray-50">
+        <!-- Page Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h1 class="text-4xl font-bold mb-4">
+                        Galeri Kegiatan Kampus
+                    </h1>
+                    <p class="text-xl text-blue-100 max-w-2xl mx-auto">
+                        Dokumentasi visual berbagai kegiatan, prestasi, dan fasilitas kampus yang membanggakan
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <!-- Search Bar -->
+                <div class="mb-6">
+                    <form method="GET" class="relative max-w-md mx-auto">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            <input
+                                type="text"
+                                name="search"
+                                value={searchQuery}
+                                placeholder="Cari foto kegiatan..."
+                                class="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                            />
+                            <!-- Hidden fields to preserve other filters -->
+                            {categoryFilter !== 'semua' && <input type="hidden" name="category" value={categoryFilter} />}
+                            {prodiFilter && <input type="hidden" name="prodi" value={prodiFilter} />}
+                            <button
+                                type="submit"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center"
+                            >
+                                <span class="sr-only">Search</span>
+                                <svg class="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Category Filter Pills -->
+                <div class="mb-4">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3">Kategori:</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {categories.map((category) => {
+                            const isActive = categoryFilter === category.slug;
+                            const url = createPageUrl(1).replace(/[?&]page=\d+/, '').replace(/[?&]category=[^&]*/, '') + 
+                                       (category.slug === 'semua' ? '' : `${createPageUrl(1).includes('?') ? '&' : '?'}category=${category.slug}`);
+                            return (
+                                <a 
+                                    href={url}
+                                    class={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                                        isActive 
+                                            ? 'bg-blue-600 text-white shadow-md' 
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
+                                    }`}
+                                >
+                                    {category.name}
+                                    <span class={`ml-2 px-2 py-1 rounded-full text-xs ${
+                                        isActive ? 'bg-blue-500' : 'bg-gray-200 text-gray-600'
+                                    }`}>
+                                        {category.count}
+                                    </span>
+                                </a>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <!-- Program Studi Filter -->
+                <div class="mb-4">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3">Program Studi:</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <a 
+                            href={createPageUrl(1).replace(/[?&]page=\d+/, '').replace(/[?&]prodi=[^&]*/, '')}
+                            class={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                                !prodiFilter 
+                                    ? 'bg-green-600 text-white shadow-md' 
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
+                            }`}
+                        >
+                            Semua Prodi
+                        </a>
+                        {programStudiList.map((prodi) => {
+                            const isActive = prodiFilter === prodi.slug;
+                            const baseUrlForProdi = createPageUrl(1).replace(/[?&]page=\d+/, '').replace(/[?&]prodi=[^&]*/, '');
+                            const url = baseUrlForProdi + `${baseUrlForProdi.includes('?') ? '&' : '?'}prodi=${prodi.slug}`;
+                            return (
+                                <a 
+                                    href={url}
+                                    class={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                                        isActive 
+                                            ? 'bg-green-600 text-white shadow-md' 
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm'
+                                    }`}
+                                >
+                                    {prodi.name}
+                                    <span class={`ml-2 px-2 py-1 rounded-full text-xs ${
+                                        isActive ? 'bg-green-500' : 'bg-gray-200 text-gray-600'
+                                    }`}>
+                                        {prodi.count}
+                                    </span>
+                                </a>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <!-- Results Info -->
+                <div class="text-sm text-gray-600">
+                    Menampilkan {currentItems.length} dari {totalItems} foto
+                    {searchQuery && <span> untuk pencarian "{searchQuery}"</span>}
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery Grid -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {currentItems.length > 0 ? (
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {currentItems.map((item) => (
+                        <div class="group bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                            <!-- Image Container -->
+                            <div class="relative h-64 overflow-hidden">
+                                <img 
+                                    src={item.image} 
+                                    alt={item.alt || item.title}
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
+                                    onclick={`openLightbox('${item.id}')`}
+                                />
+                                <!-- Category Badge -->
+                                {item.category && (
+                                    <div class="absolute top-3 left-3">
+                                        <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                                            {categories.find(c => c.slug === item.category)?.name || item.category}
+                                        </span>
+                                    </div>
+                                )}
+                                <!-- Program Studi Badge -->
+                                {item.programStudi && (
+                                    <div class="absolute top-3 right-3">
+                                        <span class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                                            {programStudiList.find(p => p.slug === item.programStudi)?.name || item.programStudi}
+                                        </span>
+                                    </div>
+                                )}
+                                <!-- Hover Overlay -->
+                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
+                                    <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <button 
+                                            class="bg-white rounded-full p-3 shadow-lg hover:scale-110 transition-transform"
+                                            onclick={`openLightbox('${item.id}')`}
+                                        >
+                                            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Content -->
+                            <div class="p-6">
+                                <h3 class="font-semibold text-lg text-gray-900 mb-2 line-clamp-2">
+                                    {item.title}
+                                </h3>
+                                {item.description && (
+                                    <p class="text-sm text-gray-600 mb-3 line-clamp-2">
+                                        {item.description}
+                                    </p>
+                                )}
+                                {item.date && (
+                                    <p class="text-xs text-gray-500">
+                                        {new Date(item.date).toLocaleDateString('id-ID', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                        })}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div class="text-center py-16">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <h3 class="mt-4 text-lg font-semibold text-gray-900">Tidak ada foto ditemukan</h3>
+                    <p class="mt-2 text-gray-600">Coba ubah kata kunci pencarian atau filter yang dipilih.</p>
+                </div>
+            )}
+
+            <!-- Pagination -->
+            {totalPages > 1 && (
+                <div class="mt-12">
+                    <nav class="flex justify-center" aria-label="Pagination">
+                        <div class="flex items-center space-x-2">
+                            <!-- Previous Button -->
+                            {page > 1 ? (
+                                <a 
+                                    href={createPageUrl(page - 1)}
+                                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                                >
+                                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                    Sebelumnya
+                                </a>
+                            ) : (
+                                <span class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-gray-100 cursor-not-allowed">
+                                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                    Sebelumnya
+                                </span>
+                            )}
+
+                            <!-- Page Numbers -->
+                            {(() => {
+                                const pages = [];
+                                const totalDots = Math.min(5, totalPages);
+                                
+                                for (let i = 0; i < totalDots; i++) {
+                                    let pageNum;
+                                    if (totalPages <= 5) {
+                                        pageNum = i + 1;
+                                    } else if (page <= 3) {
+                                        pageNum = i + 1;
+                                    } else if (page > totalPages - 3) {
+                                        pageNum = totalPages - 4 + i;
+                                    } else {
+                                        pageNum = page - 2 + i;
+                                    }
+
+                                    const isActive = pageNum === page;
+                                    
+                                    pages.push(
+                                        <a
+                                            key={pageNum}
+                                            href={createPageUrl(pageNum)}
+                                            class={`inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'}`}
+                                        >
+                                            {pageNum}
+                                        </a>
+                                    );
+                                }
+                                
+                                return pages;
+                            })()}
+
+                            <!-- Next Button -->
+                            {page < totalPages ? (
+                                <a 
+                                    href={createPageUrl(page + 1)}
+                                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                                >
+                                    Selanjutnya
+                                    <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </a>
+                            ) : (
+                                <span class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-gray-100 cursor-not-allowed">
+                                    Selanjutnya
+                                    <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </span>
+                            )}
+                        </div>
+                    </nav>
+
+                    <!-- Page Info -->
+                    <div class="mt-4 text-center text-sm text-gray-600">
+                        Halaman {page} dari {totalPages} ({totalItems} total foto)
+                    </div>
+                </div>
+            )}
+        </div>
+    </main>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="fixed inset-0 z-50 hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black bg-opacity-90" onclick="closeLightbox()"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative h-full flex items-center justify-center p-4">
+            <!-- Close Button -->
+            <button 
+                onclick="closeLightbox()" 
+                class="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+                aria-label="Close lightbox"
+            >
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            
+            <!-- Navigation Buttons -->
+            <button 
+                onclick="previousImage()" 
+                id="prevImageBtn"
+                class="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 bg-black bg-opacity-50 rounded-full p-2"
+                aria-label="Previous image"
+            >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            
+            <button 
+                onclick="nextImage()" 
+                id="nextImageBtn"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 bg-black bg-opacity-50 rounded-full p-2"
+                aria-label="Next image"
+            >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            
+            <!-- Image Container -->
+            <div class="max-w-5xl max-h-full flex flex-col">
+                <img 
+                    id="lightboxImage" 
+                    src="" 
+                    alt="" 
+                    class="max-h-[80vh] w-auto object-contain"
+                />
+                <!-- Image Info -->
+                <div class="bg-black bg-opacity-50 text-white p-4 mt-2 rounded">
+                    <h3 id="lightboxTitle" class="text-xl font-semibold mb-2"></h3>
+                    <p id="lightboxDescription" class="text-sm text-gray-300 mb-2"></p>
+                    <div class="flex items-center justify-between text-sm">
+                        <span id="lightboxDate" class="text-gray-400"></span>
+                        <div class="space-x-2">
+                            <span id="lightboxCategory" class="bg-blue-600 px-2 py-1 rounded text-xs"></span>
+                            <span id="lightboxProdi" class="bg-green-600 px-2 py-1 rounded text-xs"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <Footer slot="footer" />
+</BaseLayout>
+
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+
+<script define:vars={{ currentItems, allGalleryItems, categories, programStudiList }}>
+    // Lightbox functionality
+    let currentImageIndex = 0;
+    const galleryItems = currentItems;
+
+    function openLightbox(itemId) {
+        const item = galleryItems.find(item => item.id.toString() === itemId.toString());
+        if (!item) return;
+
+        currentImageIndex = galleryItems.findIndex(item => item.id.toString() === itemId.toString());
+        
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxTitle = document.getElementById('lightboxTitle');
+        const lightboxDescription = document.getElementById('lightboxDescription');
+        const lightboxDate = document.getElementById('lightboxDate');
+        const lightboxCategory = document.getElementById('lightboxCategory');
+        const lightboxProdi = document.getElementById('lightboxProdi');
+
+        if (!lightbox || !lightboxImage) return;
+
+        // Update lightbox content
+        lightboxImage.src = item.image;
+        lightboxImage.alt = item.alt || item.title;
+        
+        if (lightboxTitle) lightboxTitle.textContent = item.title;
+        if (lightboxDescription) lightboxDescription.textContent = item.description || '';
+        
+        if (lightboxDate && item.date) {
+            lightboxDate.textContent = new Date(item.date).toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        if (lightboxCategory) {
+            if (item.category) {
+                const category = categories.find(c => c.slug === item.category);
+                lightboxCategory.textContent = category ? category.name : item.category;
+                lightboxCategory.style.display = 'inline-block';
+            } else {
+                lightboxCategory.style.display = 'none';
+            }
+        }
+        
+        if (lightboxProdi) {
+            if (item.programStudi) {
+                const prodi = programStudiList.find(p => p.slug === item.programStudi);
+                lightboxProdi.textContent = prodi ? prodi.name : item.programStudi;
+                lightboxProdi.style.display = 'inline-block';
+            } else {
+                lightboxProdi.style.display = 'none';
+            }
+        }
+
+        // Show lightbox
+        lightbox.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+
+        // Update navigation buttons
+        updateNavigationButtons();
+    }
+
+    function closeLightbox() {
+        const lightbox = document.getElementById('lightbox');
+        if (lightbox) {
+            lightbox.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    }
+
+    function previousImage() {
+        if (currentImageIndex > 0) {
+            currentImageIndex--;
+            const item = galleryItems[currentImageIndex];
+            openLightbox(item.id);
+        }
+    }
+
+    function nextImage() {
+        if (currentImageIndex < galleryItems.length - 1) {
+            currentImageIndex++;
+            const item = galleryItems[currentImageIndex];
+            openLightbox(item.id);
+        }
+    }
+
+    function updateNavigationButtons() {
+        const prevBtn = document.getElementById('prevImageBtn');
+        const nextBtn = document.getElementById('nextImageBtn');
+        
+        if (prevBtn) {
+            prevBtn.style.display = currentImageIndex > 0 ? 'block' : 'none';
+        }
+        
+        if (nextBtn) {
+            nextBtn.style.display = currentImageIndex < galleryItems.length - 1 ? 'block' : 'none';
+        }
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        const lightbox = document.getElementById('lightbox');
+        if (lightbox && !lightbox.classList.contains('hidden')) {
+            switch(e.key) {
+                case 'Escape':
+                    closeLightbox();
+                    break;
+                case 'ArrowLeft':
+                    previousImage();
+                    break;
+                case 'ArrowRight':
+                    nextImage();
+                    break;
+            }
+        }
+    });
+
+    // Make functions globally available
+    window.openLightbox = openLightbox;
+    window.closeLightbox = closeLightbox;
+    window.previousImage = previousImage;
+    window.nextImage = nextImage;
+</script>

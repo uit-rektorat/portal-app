@@ -4,11 +4,17 @@ const STRAPI_API_URL = `${STRAPI_URL}/api`;
 
 // Helper function to fetch from Strapi REST API
 async function fetchStrapi(endpoint: string) {
-  const response = await fetch(`${STRAPI_API_URL}${endpoint}`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${endpoint}: ${response.statusText}`);
+  const url = `${STRAPI_API_URL}${endpoint}`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      const body = await response.text().catch(() => '<no body>');
+      throw new Error(`Failed to fetch ${url} (status ${response.status} ${response.statusText}): ${body}`);
+    }
+    return response.json();
+  } catch (err: any) {
+    throw new Error(`Network error fetching ${url}: ${err?.message ?? String(err)}`);
   }
-  return response.json();
 }
 
 // Types for your data
@@ -180,7 +186,7 @@ export interface Pascasarjana {
 export const getHeroSlides = async (): Promise<Hero[]> => {
   try {
     const data = await fetchStrapi('/heroes?populate=*&sort=createdAt:asc');
-    
+
     const heroes = data.data?.map((item: any) => {
       return {
         id: item.id.toString(),
@@ -195,7 +201,7 @@ export const getHeroSlides = async (): Promise<Hero[]> => {
         layout: item.layout || 'default'
       };
     }) || [];
-    
+
     return heroes;
   } catch (error) {
     console.error('Error fetching hero slides:', error);
@@ -226,11 +232,11 @@ export const getCampusAdvantages = async (): Promise<CampusAdvantage[]> => {
 export const getNews = async (limit: number = 6): Promise<News[]> => {
   try {
     const data = await fetchStrapi(`/articles?populate=*&pagination[limit]=${limit}&sort=publishedAt:desc`);
-    
+
     const news = data.data?.map((item: any) => {
       const attrs = item.attributes || item;
       const imagePath = attrs.image?.data?.attributes?.url || attrs.image?.url;
-      
+
       // Generate slug from title if not exists
       const generateSlug = (title: string): string => {
         return title
@@ -240,10 +246,10 @@ export const getNews = async (limit: number = 6): Promise<News[]> => {
           .replace(/-+/g, '-')       // Replace multiple hyphens with single
           .trim();
       };
-      
+
       const title = attrs.title || '';
       const slug = attrs.slug || attrs.Slug || (title ? generateSlug(title) : `article-${item.id}`);
-      
+
       // Map with fallback to handle different Strapi response structures
       return {
         id: item.id?.toString() || '',
@@ -262,7 +268,7 @@ export const getNews = async (limit: number = 6): Promise<News[]> => {
         tags: attrs.tags?.data ? attrs.tags.data.map((t: any) => t.attributes?.name || t.attributes?.title || '') : []
       };
     }) || [];
-    
+
     return news;
   } catch (error) {
     console.error('Error fetching news:', error);
@@ -273,13 +279,13 @@ export const getNews = async (limit: number = 6): Promise<News[]> => {
 export const getNewsBySlug = async (slug: string): Promise<News | null> => {
   try {
     const data = await fetchStrapi(`/articles?filters[slug][$eq]=${slug}&populate=*`);
-    
+
     const item = data.data?.[0];
     if (!item) return null;
-    
+
     const attrs = item.attributes || item;
     const imagePath = attrs.image?.data?.attributes?.url || attrs.image?.url;
-    
+
     // Generate slug from title if not exists
     const generateSlug = (title: string): string => {
       return title
@@ -289,10 +295,10 @@ export const getNewsBySlug = async (slug: string): Promise<News | null> => {
         .replace(/-+/g, '-')
         .trim();
     };
-    
+
     const title = attrs.title || '';
     const itemSlug = attrs.slug || attrs.Slug || (title ? generateSlug(title) : `article-${item.id}`);
-    
+
     return {
       id: item.id?.toString() || '',
       title: title,
@@ -319,7 +325,7 @@ export const getAgenda = async (limit: number = 4): Promise<Agenda[]> => {
   try {
     const today = new Date().toISOString();
     const data = await fetchStrapi(`/events?populate=*&filters[eventDate][$gte]=${today}&sort=eventDate:asc&pagination[limit]=${limit}`);
-    
+
     const agenda = data.data?.map((item: any) => {
       return {
         id: item.id.toString(),
@@ -331,7 +337,7 @@ export const getAgenda = async (limit: number = 4): Promise<Agenda[]> => {
         isHighlighted: item.isHighlighted || false
       };
     }) || [];
-    
+
     return agenda;
   } catch (error) {
     console.error('Error fetching agenda:', error);
@@ -343,7 +349,7 @@ export const getAnnouncements = async (limit: number = 5): Promise<Announcement[
   try {
     const today = new Date().toISOString();
     const data = await fetchStrapi(`/announcements?populate=*&filters[$or][0][expiryDate][$gte]=${today}&filters[$or][1][expiryDate][$null]=true&sort[0]=isPinned:desc&sort[1]=priority:desc&sort[2]=publishedAt:desc&pagination[limit]=${limit}`);
-    
+
     const announcements = data.data?.map((item: any) => {
       return {
         id: item.id.toString(),
@@ -356,7 +362,7 @@ export const getAnnouncements = async (limit: number = 5): Promise<Announcement[
         isPinned: item.isPinned || false
       };
     }) || [];
-    
+
     return announcements;
   } catch (error) {
     console.error('Error fetching announcements:', error);
@@ -440,7 +446,7 @@ export const getAllFakultas = async (): Promise<Fakultas[]> => {
 
     const fakultas = data.data?.map((item: any) => {
       const attrs = item.attributes || item;
-      
+
       // Helper to get image URL
       const getImageUrl = (image: any) => {
         if (!image) return undefined;
@@ -589,7 +595,7 @@ export const getAllPascasarjana = async (): Promise<Pascasarjana[]> => {
 
     const pascasarjana = data.data?.map((item: any) => {
       const attrs = item.attributes || item;
-      
+
       // Helper to get image URL
       const getImageUrl = (image: any) => {
         if (!image) return undefined;
@@ -671,6 +677,204 @@ export const getPascasarjana = async (slug: string): Promise<Pascasarjana | null
     };
   } catch (error) {
     console.error('Error fetching pascasarjana:', error);
+    return null;
+  }
+};
+
+// Gallery Types
+export interface Gallery {
+  id: string;
+  title: string;
+  description?: string;
+  image: string;
+  alt?: string;
+  category?: string;
+  programStudi?: string;
+  tags?: string[];
+  date?: string;
+  publishedAt?: string;
+  slug?: string;
+}
+
+export interface GalleryCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  count?: number;
+}
+
+export interface ProgramStudi {
+  id: string;
+  name: string;
+  slug: string;
+  fakultas?: string;
+  description?: string;
+  count?: number;
+}
+
+// Gallery Functions
+
+/**
+ * Get gallery items with optional filtering
+ * @param limit - Number of items to fetch (default: 20)
+ * @param category - Filter by category slug
+ * @param programStudi - Filter by program studi slug
+ * @param search - Search term for title/description
+ * @param page - Page number for pagination (default: 1)
+ */
+export const getGallery = async (
+  limit: number = 20,
+  category?: string,
+  programStudi?: string,
+  search?: string,
+  page: number = 1
+): Promise<{ data: Gallery[], total: number, page: number, pageCount: number }> => {
+  try {
+    // Build query parameters
+    const params = new URLSearchParams();
+
+    // Pagination
+    params.append('pagination[page]', page.toString());
+    params.append('pagination[pageSize]', limit.toString());
+
+    // Populate all related data
+    params.append('populate', '*');
+
+    // Sorting by date (newest first)
+    params.append('sort[0]', 'publishedAt:desc');
+
+    // Filters
+    if (category && category !== 'semua') {
+      params.append('filters[galeri_kategori][slug][$eq]', category);
+    }
+
+    if (programStudi) {
+      params.append('filters[prodi][slug][$eq]', programStudi);
+    }
+
+    if (search) {
+      params.append('filters[$or][0][title][$containsi]', search);
+      params.append('filters[$or][1][description][$containsi]', search);
+    }
+
+    const queryString = params.toString();
+    const response = await fetchStrapi(`/galleries?${queryString}`);
+
+    const galleryItems: Gallery[] = response.data?.map((item: any) => {
+      // Handle both Strapi v4 (with attributes) and v5 (flat) structures
+      const attrs = item.attributes || item;
+      const imagePath = attrs.image?.data?.attributes?.url || attrs.image?.url;
+
+      return {
+        id: item.id.toString(),
+        title: attrs.title || '',
+        description: attrs.description || '',
+        image: imagePath ? `${STRAPI_URL}${imagePath}` : '/images/gallery/default.jpg',
+        alt: attrs.alt || attrs.title,
+        category: attrs.galeri_kategori?.slug || '',
+        programStudi: attrs.prodi?.slug || '',
+        tags: attrs.tags || [],
+        date: attrs.date || attrs.publishedAt,
+        publishedAt: attrs.publishedAt,
+        slug: attrs.slug || item.id.toString(),
+      };
+    }) || [];
+
+    return {
+      data: galleryItems,
+      total: response.meta?.pagination?.total || 0,
+      page: response.meta?.pagination?.page || 1,
+      pageCount: response.meta?.pagination?.pageCount || 1,
+    };
+  } catch (error) {
+    console.error('Error fetching gallery:', error);
+    return {
+      data: [],
+      total: 0,
+      page: 1,
+      pageCount: 1,
+    };
+  }
+};
+
+/**
+ * Get gallery categories
+ */
+export const getGalleryCategories = async (): Promise<GalleryCategory[]> => {
+  try {
+    const response = await fetchStrapi('/gallery-categories?sort=name:asc');
+
+    return response.data?.map((item: any) => ({
+      id: item.id.toString(),
+      name: item.name || '',
+      slug: item.slug || '',
+      description: item.description || '',
+    })) || [];
+  } catch (error) {
+    console.error('Error fetching gallery categories:', error);
+    return [];
+  }
+};
+
+/**
+ * Get program studi list for gallery filtering
+ */
+export const getGalleryProgramStudi = async (): Promise<ProgramStudi[]> => {
+  try {
+    const response = await fetchStrapi('/program-studis?sort=name:asc');
+
+    return response.data?.map((item: any) => ({
+      id: item.id.toString(),
+      name: item.name || '',
+      slug: item.slug || '',
+      description: item.description || '',
+    })) || [];
+  } catch (error) {
+    console.error('Error fetching program studi:', error);
+    return [];
+  }
+};
+
+/**
+ * Get latest gallery items for homepage
+ */
+export const getLatestGallery = async (limit: number = 6): Promise<Gallery[]> => {
+  const result = await getGallery(limit);
+  return result.data;
+};
+
+/**
+ * Get gallery item by slug
+ */
+export const getGalleryBySlug = async (slug: string): Promise<Gallery | null> => {
+  try {
+    const response = await fetchStrapi(`/galleries?filters[slug][$eq]=${slug}&populate=*`);
+
+    if (!response.data || response.data.length === 0) {
+      return null;
+    }
+
+    const item = response.data[0];
+    // Handle both Strapi v4 (with attributes) and v5 (flat) structures  
+    const attrs = item.attributes || item;
+    const imagePath = attrs.image?.data?.attributes?.url || attrs.image?.url;
+
+    return {
+      id: item.id.toString(),
+      title: attrs.title || '',
+      description: attrs.description || '',
+      image: imagePath ? `${STRAPI_URL}${imagePath}` : '/images/gallery/default.jpg',
+      alt: attrs.alt || attrs.title,
+      category: attrs.galeri_kategori?.slug || '',
+      programStudi: attrs.prodi?.slug || '',
+      tags: attrs.tags || [],
+      date: attrs.date || attrs.publishedAt,
+      publishedAt: attrs.publishedAt,
+      slug: attrs.slug || item.id.toString(),
+    };
+  } catch (error) {
+    console.error('Error fetching gallery by slug:', error);
     return null;
   }
 };

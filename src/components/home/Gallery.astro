@@ -1,0 +1,530 @@
+---
+/**
+ * Gallery Component
+ * Displays a slider/carousel of latest gallery photos
+ * Features hover effects, category overlays, and navigation to full gallery page
+ */
+
+interface GalleryItem {
+    id: number | string;
+    title: string;
+    image: string;
+    alt?: string;
+    category?: string;
+    programStudi?: string;
+    date?: string;
+    publishedAt?: string;
+    slug?: string;
+    description?: string;
+}
+
+export interface Props {
+    gallery?: GalleryItem[];
+}
+
+const { gallery: galleryData } = Astro.props;
+
+// Helper function to get category color
+const getCategoryColor = (category: string) => {
+    const colorMap: { [key: string]: string } = {
+        'kegiatan': 'bg-blue-600',
+        'prestasi': 'bg-red-600',
+        'fasilitas': 'bg-teal-600',
+        'umum': 'bg-orange-600',
+        'akademik': 'bg-purple-600',
+        'mahasiswa': 'bg-green-600',
+    };
+    return colorMap[category?.toLowerCase()] || 'bg-gray-600';
+};
+
+// Default gallery data (fallback)
+const defaultGallery: GalleryItem[] = [
+    {
+        id: 1,
+        title: "Wisuda Sarjana Periode I 2024",
+        image: "/images/gallery/wisuda-2024-1.jpg",
+        alt: "Wisuda Sarjana UIT 2024",
+        category: "kegiatan",
+        date: "2024-03-15"
+    },
+    {
+        id: 2,
+        title: "Seminar Nasional Teknologi",
+        image: "/images/gallery/seminar-teknologi.jpg",
+        alt: "Seminar Nasional Teknologi",
+        category: "kegiatan",
+        programStudi: "teknik-informatika",
+        date: "2024-03-10"
+    },
+    {
+        id: 3,
+        title: "Workshop Kewirausahaan",
+        image: "/images/gallery/workshop-entrepreneurship.jpg",
+        alt: "Workshop Kewirausahaan",
+        category: "kegiatan",
+        programStudi: "manajemen",
+        date: "2024-03-08"
+    },
+    {
+        id: 4,
+        title: "Penerimaan Mahasiswa Baru 2024",
+        image: "/images/gallery/pmb-2024.jpg",
+        alt: "Penerimaan Mahasiswa Baru 2024",
+        category: "umum",
+        date: "2024-03-05"
+    },
+    {
+        id: 5,
+        title: "Prestasi Mahasiswa Nasional",
+        image: "/images/gallery/prestasi-nasional.jpg",
+        alt: "Prestasi Mahasiswa Tingkat Nasional",
+        category: "prestasi",
+        date: "2024-03-01"
+    },
+    {
+        id: 6,
+        title: "Fasilitas Laboratorium Baru",
+        image: "/images/gallery/lab-baru.jpg",
+        alt: "Fasilitas Laboratorium Terbaru",
+        category: "fasilitas",
+        date: "2024-02-28"
+    }
+];
+
+// Use Strapi data if available, otherwise use default
+const gallery = galleryData && galleryData.length > 0 ? galleryData : defaultGallery;
+
+// Debug: Log gallery data structure
+console.log('Gallery component received data:', gallery.length > 0 ? gallery[0] : 'no data');
+if (gallery.length > 0) {
+    console.log('Sample gallery item structure:', JSON.stringify(gallery[0], null, 2));
+}
+---
+
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Section Header -->
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                Galeri Kegiatan
+            </h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Dokumentasi visual berbagai kegiatan dan prestasi kampus yang membanggakan
+            </p>
+        </div>
+
+        <!-- Gallery Slider -->
+        <div class="relative">
+            <div class="gallery-slider overflow-hidden">
+                <div class="gallery-track flex transition-transform duration-500 ease-in-out" id="galleryTrack">
+                    {gallery.map((item, index) => (
+                        <div class="gallery-slide flex-shrink-0 w-full sm:w-1/2 lg:w-1/3 px-3">
+                            <div class="group relative bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300">
+                                <!-- Image Container -->
+                                <div class="relative h-64 overflow-hidden cursor-pointer gallery-item" data-gallery-id={item.id}>
+                                    <img 
+                                        src={item.image} 
+                                    <img 
+                                        src={item.image} 
+                                        alt={item.alt || item.title || "Gallery Image"} 
+                                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        loading="lazy"
+                                        onload="console.log('Image loaded:', this.src)"
+                                        onerror="console.error('Image failed to load:', this.src)"
+                                    />
+                                    <!-- Overlay -->
+                                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
+                                        <div class="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                        alt={item.alt || item.title}
+                                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                    />
+                                    <!-- Category Overlay -->
+                                    {item.category && (
+                                        <div class={`absolute top-4 left-4 px-3 py-1 rounded-full text-white text-sm font-medium ${getCategoryColor(item.category)}`}>
+                                            {item.category}
+                                        </div>
+                                    )}
+                                    <!-- Hover Overlay -->
+                                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
+                                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Content -->
+                                <div class="p-6">
+                                    <h3 class="font-semibold text-lg text-gray-900 mb-2 line-clamp-2">
+                                        {item.title}
+                                    </h3>
+                                    {item.date && (
+                                        <p class="text-sm text-gray-500">
+                                            {new Date(item.date).toLocaleDateString('id-ID', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            })}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <!-- Navigation Arrows -->
+            <button 
+                class="absolute left-2 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                id="prevBtn"
+                aria-label="Previous slide"
+            >
+                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <button 
+                class="absolute right-2 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                id="nextBtn"
+                aria-label="Next slide"
+            >
+                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+
+            <!-- Dots Indicator -->
+            <div class="flex justify-center mt-8 space-x-2" id="dotsContainer">
+                <!-- Dots will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Call to Action Button -->
+        <div class="text-center mt-12">
+            <a 
+                href="/gallery" 
+                class="inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+                <span>Lihat Galeri Selengkapnya</span>
+                <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+            </a>
+        </div>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div id="homeLightbox" class="fixed inset-0 z-50 hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black bg-opacity-90" onclick="closeHomeLightbox()"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative h-full flex items-center justify-center p-4">
+            <!-- Close Button -->
+            <button 
+                onclick="closeHomeLightbox()" 
+                class="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+                aria-label="Close lightbox"
+            >
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            
+            <!-- Image Container -->
+            <div class="max-w-4xl max-h-full flex flex-col">
+                <img 
+                    id="homeLightboxImage" 
+                    src="" 
+                    alt="" 
+                    class="max-h-[80vh] w-auto object-contain"
+                />
+                <!-- Image Info -->
+                <div class="bg-black bg-opacity-50 text-white p-4 mt-2 rounded">
+                    <h3 id="homeLightboxTitle" class="text-xl font-semibold mb-2"></h3>
+                    <p id="homeLightboxDescription" class="text-sm text-gray-300 mb-2"></p>
+                    <div class="flex items-center justify-between text-sm">
+                        <span id="homeLightboxDate" class="text-gray-400"></span>
+                        <a href="/gallery" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+                            Lihat Galeri Lengkap
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+
+<script>
+    // Debug gallery data
+    console.log('Gallery component loaded');
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const track = document.getElementById('galleryTrack') as HTMLElement;
+        const prevBtn = document.getElementById('prevBtn') as HTMLButtonElement;
+        const nextBtn = document.getElementById('nextBtn') as HTMLButtonElement;
+        const dotsContainer = document.getElementById('dotsContainer') as HTMLElement;
+        
+        if (!track || !prevBtn || !nextBtn || !dotsContainer) return;
+
+        let currentSlide = 0;
+        const slides = track.children;
+        let slidesToShow = 1;
+        
+        // Determine slides to show based on screen size
+        function updateSlidesToShow() {
+            if (window.innerWidth >= 1024) {
+                slidesToShow = 3;
+            } else if (window.innerWidth >= 640) {
+                slidesToShow = 2;
+            } else {
+                slidesToShow = 1;
+            }
+        }
+
+        // Create dots
+        function createDots() {
+            const totalDots = Math.ceil(slides.length - slidesToShow + 1);
+            dotsContainer.innerHTML = '';
+            
+            for (let i = 0; i < totalDots; i++) {
+                const dot = document.createElement('button');
+                dot.classList.add('w-3', 'h-3', 'rounded-full', 'transition-all', 'duration-300');
+                dot.classList.add(i === 0 ? 'bg-blue-600' : 'bg-gray-300');
+                dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+                dot.addEventListener('click', () => goToSlide(i));
+                dotsContainer.appendChild(dot);
+            }
+        }
+
+        // Update slider position
+        function updateSlider() {
+            const slideWidth = 100 / slidesToShow;
+            const translateX = -(currentSlide * slideWidth);
+            track.style.transform = `translateX(${translateX}%)`;
+            
+            // Update dots
+            const dots = dotsContainer.children;
+            Array.from(dots).forEach((dot, index) => {
+                dot.classList.toggle('bg-blue-600', index === currentSlide);
+                dot.classList.toggle('bg-gray-300', index !== currentSlide);
+            });
+
+            // Update button states
+            const maxSlide = Math.max(0, slides.length - slidesToShow);
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide >= maxSlide;
+        }
+
+        // Go to specific slide
+        function goToSlide(slideIndex: number) {
+            const maxSlide = Math.max(0, slides.length - slidesToShow);
+            currentSlide = Math.max(0, Math.min(slideIndex, maxSlide));
+            updateSlider();
+        }
+
+        // Previous slide
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlider();
+            }
+        });
+
+        // Next slide
+        nextBtn.addEventListener('click', () => {
+            const maxSlide = Math.max(0, slides.length - slidesToShow);
+            if (currentSlide < maxSlide) {
+                currentSlide++;
+                updateSlider();
+            }
+        });
+
+        // Auto-slide functionality
+        let autoSlideInterval: number;
+        
+        function startAutoSlide() {
+            autoSlideInterval = setInterval(() => {
+                const maxSlide = Math.max(0, slides.length - slidesToShow);
+                if (currentSlide >= maxSlide) {
+                    currentSlide = 0;
+                } else {
+                    currentSlide++;
+                }
+                updateSlider();
+            }, 5000); // Change slide every 5 seconds
+        }
+
+        function stopAutoSlide() {
+            clearInterval(autoSlideInterval);
+        }
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            updateSlidesToShow();
+            currentSlide = 0;
+            createDots();
+            updateSlider();
+        });
+
+        // Initialize
+        updateSlidesToShow();
+        createDots();
+        updateSlider();
+        startAutoSlide();
+
+        // Pause auto-slide on hover
+        track.addEventListener('mouseenter', stopAutoSlide);
+        track.addEventListener('mouseleave', startAutoSlide);
+
+        // Touch/swipe support for mobile
+        let startX = 0;
+        let isDragging = false;
+
+        track.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+            stopAutoSlide();
+        });
+
+        track.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+        });
+
+        track.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            const endX = e.changedTouches[0].clientX;
+            const diffX = startX - endX;
+            
+            if (Math.abs(diffX) > 50) { // Minimum swipe distance
+                if (diffX > 0) {
+                    // Swipe left - next slide
+                    const maxSlide = Math.max(0, slides.length - slidesToShow);
+                    if (currentSlide < maxSlide) {
+                        currentSlide++;
+                        updateSlider();
+                    }
+                } else {
+                    // Swipe right - previous slide
+                    if (currentSlide > 0) {
+                        currentSlide--;
+                        updateSlider();
+                    }
+                }
+            }
+            
+            startAutoSlide();
+        });
+    });
+
+    // Home Lightbox functionality
+    const galleryData = {gallery.map(item => ({ 
+        id: item.id,
+        title: item.title,
+        image: item.image,
+        alt: item.alt || item.title,
+        description: item.description || '',
+        date: item.date || item.publishedAt,
+        category: item.category || item.programStudi
+    }))};
+
+    console.log('Gallery data for lightbox:', galleryData);
+
+    function openLightbox(itemId) {
+        console.log('Opening lightbox for item:', itemId);
+        const item = galleryData.find(item => item.id.toString() === itemId.toString());
+        console.log('Found gallery item:', item);
+        
+        if (!item) {
+            console.error('Gallery item not found for id:', itemId);
+            return;
+        }
+
+        const lightbox = document.getElementById('homeLightbox');
+        const lightboxImage = document.getElementById('homeLightboxImage');
+        const lightboxTitle = document.getElementById('homeLightboxTitle');
+        const lightboxDescription = document.getElementById('homeLightboxDescription');
+        const lightboxDate = document.getElementById('homeLightboxDate');
+
+        if (!lightbox || !lightboxImage) return;
+
+        // Update lightbox content
+        lightboxImage.src = item.image;
+        lightboxImage.alt = item.alt || item.title;
+        
+        if (lightboxTitle) lightboxTitle.textContent = item.title;
+        if (lightboxDescription) lightboxDescription.textContent = item.description || '';
+        
+        if (lightboxDate && item.date) {
+            lightboxDate.textContent = new Date(item.date).toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // Show lightbox
+        lightbox.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeHomeLightbox() {
+        const lightbox = document.getElementById('homeLightbox');
+        if (lightbox) {
+            lightbox.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Keyboard navigation for home lightbox
+    document.addEventListener('keydown', function(e) {
+        const lightbox = document.getElementById('homeLightbox');
+        if (lightbox && !lightbox.classList.contains('hidden')) {
+            if (e.key === 'Escape') {
+                closeHomeLightbox();
+            }
+        }
+    });
+
+    // Make functions globally available
+    window.openLightbox = openLightbox;
+    window.closeHomeLightbox = closeHomeLightbox;
+
+    // Add event listeners when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add click listeners to gallery items
+        const galleryItems = document.querySelectorAll('.gallery-item');
+        console.log('Found gallery items:', galleryItems.length);
+        
+        galleryItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const galleryId = this.getAttribute('data-gallery-id');
+                console.log('Gallery item clicked:', galleryId);
+                openLightbox(galleryId);
+            });
+        });
+
+        console.log('Gallery event listeners attached');
+    });
+</script>

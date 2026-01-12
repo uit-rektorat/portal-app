@@ -7,8 +7,9 @@ Website profile kampus Universitas Indonesia Timur (UIT) yang dibangun dengan As
 - **Mobile-First Design**: Responsif di semua perangkat
 - **Modern & Professional**: Tampilan modern dengan warna resmi UIT
 - **Hero Slider with Multiple Layouts**: 4 variasi layout slider (default, full-image, centered, minimal)
+- **Gallery System**: Sistem galeri dengan search, filter, dan lightbox
 - **Modular Components**: Komponen yang dapat digunakan kembali
-- **Strapi CMS Integration**: Content management dengan Strapi GraphQL API
+- **Strapi CMS Integration**: Content management dengan Strapi REST API
 - **Social Media Integration**: YouTube, Instagram, Facebook di header
 - **Optimized Images**: Auto-responsive dengan breakpoints
 - **Keyboard Navigation**: Support keyboard untuk slider
@@ -25,17 +26,20 @@ Website profile kampus Universitas Indonesia Timur (UIT) yang dibangun dengan As
 │   │   │   ├── HeroSlider.astro
 │   │   │   ├── QuickAccess.astro
 │   │   │   ├── CampusAdvantages.astro
-│   │   │   ├── NewsSection.astro
+│   │   │   ├── CampusInfo.astro
+│   │   │   ├── Gallery.astro
 │   │   │   └── Testimonials.astro
 │   │   ├── Header.astro
 │   │   └── Footer.astro
 │   ├── layouts/         # Page layouts
 │   │   └── BaseLayout.astro
 │   ├── lib/            # Utilities and API clients
-│   │   └── strapi.ts   # Strapi GraphQL client
+│   │   └── strapi.ts   # Strapi REST API client
 │   ├── pages/          # Page routes
 │   │   ├── index.astro      # Home page (Beranda)
-│   │   └── profile.astro    # Profile page
+│   │   ├── profile.astro    # Profile page
+│   │   └── gallery/
+│   │       └── index.astro  # Gallery page
 │   └── styles/         # Global styles
 │       └── global.css  # Tailwind CSS imports
 ├── astro.config.mjs
@@ -55,9 +59,19 @@ Halaman utama dengan section:
 - **Quick Access**: Akses cepat ke berbagai layanan kampus
 - **Keunggulan Kampus**: Showcase keunggulan UIT
 - **Berita/Pengumuman**: Informasi terkini
+- **Gallery**: Galeri foto kegiatan kampus dengan slider interaktif
 - **Testimoni**: Testimoni dari alumni dan mahasiswa
 
-### 2. Profil
+### 2. Gallery
+Halaman galeri lengkap dengan:
+- **Search Bar**: Pencarian foto berdasarkan judul atau deskripsi
+- **Category Filter**: Filter berdasarkan kategori (Umum, Prestasi, Fasilitas, Kegiatan)
+- **Program Studi Filter**: Filter berdasarkan program studi
+- **Grid Layout**: Layout responsif 1-4 kolom tergantung ukuran layar
+- **Lightbox**: Preview foto dengan navigasi dan informasi detail
+- **Pagination**: Navigasi halaman untuk performa optimal
+
+### 3. Profil
 Halaman profil dengan:
 - **Visi**: Visi UIT
 - **Misi**: Daftar misi UIT
@@ -69,6 +83,11 @@ Halaman profil dengan:
 - **[Tailwind CSS](https://tailwindcss.com/)**: Styling
 - **[TypeScript](https://www.typescriptlang.org/)**: Type safety
 - **[GraphQL Request](https://github.com/jasonkuhrt/graphql-request)**: API client untuk Strapi
+
+## 📚 Panduan API
+
+- **[STRAPI_GUIDE.md](./STRAPI_GUIDE.md)**: Panduan lengkap setup Strapi CMS
+- **[GALLERY_STRAPI_GUIDE.md](./GALLERY_STRAPI_GUIDE.md)**: Panduan API Strapi untuk Gallery
 
 ## 📦 Instalasi & Menjalankan
 
