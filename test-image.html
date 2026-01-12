@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Test Strapi Images</title>
 </head>
+
 <body>
     <h1>Test Strapi Images</h1>
-    
+
     <h2>Test 1: Direct Image</h2>
-    <img src="https://cms.uit.ac.id/uploads/medium_Whats_App_Image_2026_01_12_at_09_30_38_1_9532893920.jpeg" 
-         alt="Test Image" 
-         style="max-width: 500px;"
-         onload="console.log('Image loaded successfully')"
-         onerror="console.log('Image failed to load')">
-    
+    <img src="https://cms.uit.ac.id/uploads/medium_Whats_App_Image_2026_01_12_at_09_30_38_1_9532893920.jpeg"
+        alt="Test Image" style="max-width: 500px;" onload="console.log('Image loaded successfully')"
+        onerror="console.log('Image failed to load')">
+
     <h2>Test 2: Fetch API</h2>
     <button onclick="testFetch()">Test Fetch</button>
     <div id="result"></div>
-    
+
     <script>
         function testFetch() {
             fetch('https://cms.uit.ac.id/uploads/medium_Whats_App_Image_2026_01_12_at_09_30_38_1_9532893920.jpeg')
                 .then(response => {
-                    document.getElementById('result').innerHTML = 
+                    document.getElementById('result').innerHTML =
                         'Status: ' + response.status + '<br>' +
                         'Headers: ' + JSON.stringify([...response.headers.entries()]);
                 })
@@ -29,9 +29,10 @@
                     document.getElementById('result').innerHTML = 'Error: ' + err.message;
                 });
         }
-        
+
         // Test on page load
         testFetch();
     </script>
 </body>
+
 </html>
