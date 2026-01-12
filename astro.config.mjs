@@ -1,13 +1,17 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import node from '@astrojs/node';
 
 import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-  output: 'static', // Static mode for better performance with webhook rebuild
+  output: 'server', // Server mode for SSR to handle dynamic query params
+  adapter: node({
+    mode: 'standalone'
+  }),
   image: {
-    domains: ['cms.uit.ac.id'],
+    domains: ['cms.uit.ac.id', 'localhost'],
     remotePatterns: [
       {
         protocol: 'https',

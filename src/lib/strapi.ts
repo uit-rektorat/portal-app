@@ -731,6 +731,9 @@ export const getGallery = async (
   page: number = 1
 ): Promise<{ data: Gallery[], total: number, page: number, pageCount: number }> => {
   try {
+    console.log('========================================');
+    console.log('[getGallery] Called with params:', { limit, category, programStudi, search, page });
+    
     // Build query parameters
     const params = new URLSearchParams();
 
@@ -746,40 +749,78 @@ export const getGallery = async (
 
     // Filters
     if (category && category !== 'semua') {
-      params.append('filters[galeri_kategori][slug][$eq]', category);
+      params.append('filters[category][slug][$eq]', category);
+      console.log('[getGallery] Adding category filter:', category);
     }
 
     if (programStudi) {
       params.append('filters[prodi][slug][$eq]', programStudi);
+      console.log('[getGallery] Adding prodi filter:', programStudi);
     }
 
     if (search) {
       params.append('filters[$or][0][title][$containsi]', search);
       params.append('filters[$or][1][description][$containsi]', search);
+      console.log('[getGallery] Adding search filter:', search);
     }
 
     const queryString = params.toString();
-    const response = await fetchStrapi(`/galleries?${queryString}`);
+    const fullUrl = `/galleries?${queryString}`;
+    console.log('[getGallery] Query string:', queryString);
+    console.log('[getGallery] Full URL:', `${STRAPI_API_URL}${fullUrl}`);
+    
+    const response = await fetchStrapi(fullUrl);
+
+    console.log('[getGallery] Response received:', {
+      dataCount: response.data?.length || 0,
+      total: response.meta?.pagination?.total || 0,
+      page: response.meta?.pagination?.page || 0,
+      pageCount: response.meta?.pagination?.pageCount || 0
+    });
+    
+    // Log first item to see structure
+    if (response.data?.[0]) {
+      const firstItem = response.data[0];
+      console.log('[getGallery] First item raw data:', JSON.stringify(firstItem, null, 2));
+    }
 
     const galleryItems: Gallery[] = response.data?.map((item: any) => {
       // Handle both Strapi v4 (with attributes) and v5 (flat) structures
       const attrs = item.attributes || item;
       const imagePath = attrs.image?.data?.attributes?.url || attrs.image?.url;
 
-      return {
+      // Handle category relation (could be nested in data.attributes)
+      const categoryData = attrs.category?.data?.attributes || attrs.category?.data || attrs.category;
+      const prodiData = attrs.prodi?.data?.attributes || attrs.prodi?.data || attrs.prodi;
+
+      const mappedItem = {
         id: item.id.toString(),
         title: attrs.title || '',
         description: attrs.description || '',
         image: imagePath ? `${STRAPI_URL}${imagePath}` : '/images/gallery/default.jpg',
         alt: attrs.alt || attrs.title,
-        category: attrs.galeri_kategori?.slug || '',
-        programStudi: attrs.prodi?.slug || '',
+        category: categoryData?.slug || '',
+        programStudi: prodiData?.slug || '',
         tags: attrs.tags || [],
         date: attrs.date || attrs.publishedAt,
         publishedAt: attrs.publishedAt,
         slug: attrs.slug || item.id.toString(),
       };
+      
+      // Log each mapped item
+      console.log('[getGallery] Mapped item:', {
+        id: mappedItem.id,
+        title: mappedItem.title,
+        category: mappedItem.category,
+        programStudi: mappedItem.programStudi,
+        image: mappedItem.image
+      });
+      
+      return mappedItem;
     }) || [];
+
+    console.log('[getGallery] Total items mapped:', galleryItems.length);
+    console.log('========================================');
 
     return {
       data: galleryItems,
@@ -805,12 +846,16 @@ export const getGalleryCategories = async (): Promise<GalleryCategory[]> => {
   try {
     const response = await fetchStrapi('/gallery-categories?sort=name:asc');
 
-    return response.data?.map((item: any) => ({
-      id: item.id.toString(),
-      name: item.name || '',
-      slug: item.slug || '',
-      description: item.description || '',
-    })) || [];
+    return response.data?.map((item: any) => {
+      // Handle both Strapi v4 (with attributes) and v5 (flat) structures
+      const attrs = item.attributes || item;
+      return {
+        id: item.id.toString(),
+        name: attrs.name || '',
+        slug: attrs.slug || '',
+        description: attrs.description || '',
+      };
+    }) || [];
   } catch (error) {
     console.error('Error fetching gallery categories:', error);
     return [];
@@ -824,12 +869,16 @@ export const getGalleryProgramStudi = async (): Promise<ProgramStudi[]> => {
   try {
     const response = await fetchStrapi('/program-studis?sort=name:asc');
 
-    return response.data?.map((item: any) => ({
-      id: item.id.toString(),
-      name: item.name || '',
-      slug: item.slug || '',
-      description: item.description || '',
-    })) || [];
+    return response.data?.map((item: any) => {
+      // Handle both Strapi v4 (with attributes) and v5 (flat) structures
+      const attrs = item.attributes || item;
+      return {
+        id: item.id.toString(),
+        name: attrs.name || '',
+        slug: attrs.slug || '',
+        description: attrs.description || '',
+      };
+    }) || [];
   } catch (error) {
     console.error('Error fetching program studi:', error);
     return [];

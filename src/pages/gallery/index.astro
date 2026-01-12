@@ -39,12 +39,23 @@ let totalItems = 0;
 let totalPages = 1;
 let currentItems: Gallery[] = [];
 
+// Debug: Log query parameters
+console.log('Gallery page - Query params:', {
+    search: searchQuery,
+    category: categoryFilter,
+    prodi: prodiFilter,
+    page
+});
+
 try {
     // Fetch categories and program studi
     const [categoriesResult, programStudiResult] = await Promise.all([
         getGalleryCategories(),
         getGalleryProgramStudi()
     ]);
+    
+    console.log('Categories from Strapi:', categoriesResult);
+    console.log('Program Studi from Strapi:', programStudiResult);
     
     categories = [
         { id: 'semua', name: 'Semua', slug: 'semua' },
@@ -54,6 +65,14 @@ try {
     programStudiList = programStudiResult;
 
     // Fetch gallery items with filters
+    console.log('Fetching gallery with params:', {
+        itemsPerPage,
+        categoryFilter: categoryFilter !== 'semua' ? categoryFilter : undefined,
+        prodiFilter: prodiFilter || undefined,
+        searchQuery: searchQuery || undefined,
+        page
+    });
+    
     const result = await getGallery(
         itemsPerPage, 
         categoryFilter !== 'semua' ? categoryFilter : undefined,
@@ -61,6 +80,13 @@ try {
         searchQuery || undefined,
         page
     );
+
+    console.log('Gallery result:', {
+        dataCount: result.data.length,
+        total: result.total,
+        page: result.page,
+        pageCount: result.pageCount
+    });
 
     currentItems = result.data;
     totalItems = result.total;
@@ -126,6 +152,52 @@ const createPageUrl = (pageNum: number) => {
     const queryString = params.toString();
     return queryString ? `${baseUrl}?${queryString}` : baseUrl;
 };
+
+// Helper function to create filter URLs
+const createFilterUrl = (filterType: 'category' | 'prodi', filterValue: string) => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set('search', searchQuery);
+    
+    if (filterType === 'category') {
+        if (filterValue !== 'semua') params.set('category', filterValue);
+        if (prodiFilter) params.set('prodi', prodiFilter);
+    } else if (filterType === 'prodi') {
+        if (categoryFilter !== 'semua') params.set('category', categoryFilter);
+        if (filterValue) params.set('prodi', filterValue);
+    }
+    
+    const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+};
+
+// Generate page numbers for pagination
+const getPageNumbers = () => {
+    const pages: number[] = [];
+    const totalDots = Math.min(5, totalPages);
+    
+    for (let i = 0; i < totalDots; i++) {
+        let pageNum;
+        const lessThanOrEqual5 = totalPages <= 5;
+        const lessThanOrEqual3 = page <= 3;
+        const greaterThanMinusThree = page > (totalPages - 3);
+        
+        if (lessThanOrEqual5) {
+            pageNum = i + 1;
+        } else if (lessThanOrEqual3) {
+            pageNum = i + 1;
+        } else if (greaterThanMinusThree) {
+            pageNum = totalPages - 4 + i;
+        } else {
+            pageNum = page - 2 + i;
+        }
+        
+        pages.push(pageNum);
+    }
+    
+    return pages;
+};
+
+const pageNumbers = getPageNumbers();
 ---
 
 <BaseLayout
@@ -133,6 +205,9 @@ const createPageUrl = (pageNum: number) => {
     description="Galeri foto dokumentasi berbagai kegiatan, prestasi, dan fasilitas Universitas Indonesia Timur"
 >
     <Header slot="header" />
+    
+    <!-- GLightbox CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css" />
 
     <!-- Page Content -->
     <main class="min-h-screen bg-gray-50">
@@ -191,11 +266,9 @@ const createPageUrl = (pageNum: number) => {
                     <div class="flex flex-wrap gap-2">
                         {categories.map((category) => {
                             const isActive = categoryFilter === category.slug;
-                            const url = createPageUrl(1).replace(/[?&]page=\d+/, '').replace(/[?&]category=[^&]*/, '') + 
-                                       (category.slug === 'semua' ? '' : `${createPageUrl(1).includes('?') ? '&' : '?'}category=${category.slug}`);
                             return (
                                 <a 
-                                    href={url}
+                                    href={createFilterUrl('category', category.slug)}
                                     class={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                                         isActive 
                                             ? 'bg-blue-600 text-white shadow-md' 
@@ -203,11 +276,13 @@ const createPageUrl = (pageNum: number) => {
                                     }`}
                                 >
                                     {category.name}
-                                    <span class={`ml-2 px-2 py-1 rounded-full text-xs ${
-                                        isActive ? 'bg-blue-500' : 'bg-gray-200 text-gray-600'
-                                    }`}>
-                                        {category.count}
-                                    </span>
+                                    {category.count && (
+                                        <span class={`ml-2 px-2 py-1 rounded-full text-xs ${
+                                            isActive ? 'bg-blue-500' : 'bg-gray-200 text-gray-600'
+                                        }`}>
+                                            {category.count}
+                                        </span>
+                                    )}
                                 </a>
                             );
                         })}
@@ -219,7 +294,7 @@ const createPageUrl = (pageNum: number) => {
                     <h3 class="text-sm font-semibold text-gray-700 mb-3">Program Studi:</h3>
                     <div class="flex flex-wrap gap-2">
                         <a 
-                            href={createPageUrl(1).replace(/[?&]page=\d+/, '').replace(/[?&]prodi=[^&]*/, '')}
+                            href={createFilterUrl('prodi', '')}
                             class={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                                 !prodiFilter 
                                     ? 'bg-green-600 text-white shadow-md' 
@@ -230,11 +305,9 @@ const createPageUrl = (pageNum: number) => {
                         </a>
                         {programStudiList.map((prodi) => {
                             const isActive = prodiFilter === prodi.slug;
-                            const baseUrlForProdi = createPageUrl(1).replace(/[?&]page=\d+/, '').replace(/[?&]prodi=[^&]*/, '');
-                            const url = baseUrlForProdi + `${baseUrlForProdi.includes('?') ? '&' : '?'}prodi=${prodi.slug}`;
                             return (
                                 <a 
-                                    href={url}
+                                    href={createFilterUrl('prodi', prodi.slug)}
                                     class={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                                         isActive 
                                             ? 'bg-green-600 text-white shadow-md' 
@@ -242,11 +315,13 @@ const createPageUrl = (pageNum: number) => {
                                     }`}
                                 >
                                     {prodi.name}
-                                    <span class={`ml-2 px-2 py-1 rounded-full text-xs ${
-                                        isActive ? 'bg-green-500' : 'bg-gray-200 text-gray-600'
-                                    }`}>
-                                        {prodi.count}
-                                    </span>
+                                    {prodi.count && (
+                                        <span class={`ml-2 px-2 py-1 rounded-full text-xs ${
+                                            isActive ? 'bg-green-500' : 'bg-gray-200 text-gray-600'
+                                        }`}>
+                                            {prodi.count}
+                                        </span>
+                                    )}
                                 </a>
                             );
                         })}
@@ -256,7 +331,9 @@ const createPageUrl = (pageNum: number) => {
                 <!-- Results Info -->
                 <div class="text-sm text-gray-600">
                     Menampilkan {currentItems.length} dari {totalItems} foto
-                    {searchQuery && <span> untuk pencarian "{searchQuery}"</span>}
+                    {searchQuery && <span class="font-semibold"> untuk pencarian "{searchQuery}"</span>}
+                    {categoryFilter !== 'semua' && <span class="font-semibold"> dalam kategori {categories.find(c => c.slug === categoryFilter)?.name}</span>}
+                    {prodiFilter && <span class="font-semibold"> dari program studi {programStudiList.find(p => p.slug === prodiFilter)?.name}</span>}
                 </div>
             </div>
         </div>
@@ -268,43 +345,47 @@ const createPageUrl = (pageNum: number) => {
                     {currentItems.map((item) => (
                         <div class="group bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                             <!-- Image Container -->
-                            <div class="relative h-64 overflow-hidden">
+                            <a 
+                                href={item.image}
+                                class="glightbox relative block h-64 overflow-hidden bg-gray-100"
+                                data-gallery="gallery"
+                                data-title={item.title}
+                                data-description={`${item.description || ''}<br><small class='text-gray-400'>${item.date ? new Date(item.date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</small>`}
+                            >
                                 <img 
                                     src={item.image} 
                                     alt={item.alt || item.title}
-                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
-                                    onclick={`openLightbox('${item.id}')`}
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 relative z-0"
+                                    loading="eager"
+                                    style="opacity: 1; background-color: transparent;"
                                 />
                                 <!-- Category Badge -->
                                 {item.category && (
-                                    <div class="absolute top-3 left-3">
-                                        <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                                    <div class="absolute top-3 left-3 z-10">
+                                        <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
                                             {categories.find(c => c.slug === item.category)?.name || item.category}
                                         </span>
                                     </div>
                                 )}
                                 <!-- Program Studi Badge -->
                                 {item.programStudi && (
-                                    <div class="absolute top-3 right-3">
-                                        <span class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                                    <div class="absolute top-3 right-3 z-10">
+                                        <span class="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
                                             {programStudiList.find(p => p.slug === item.programStudi)?.name || item.programStudi}
                                         </span>
                                     </div>
                                 )}
                                 <!-- Hover Overlay -->
-                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
+                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center pointer-events-none">
                                     <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        <button 
-                                            class="bg-white rounded-full p-3 shadow-lg hover:scale-110 transition-transform"
-                                            onclick={`openLightbox('${item.id}')`}
-                                        >
-                                            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div class="bg-white rounded-full p-3 shadow-lg">
+                                            <svg class="w-8 h-8 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                             </svg>
-                                        </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                             
                             <!-- Content -->
                             <div class="p-6">
@@ -365,37 +446,17 @@ const createPageUrl = (pageNum: number) => {
                             )}
 
                             <!-- Page Numbers -->
-                            {(() => {
-                                const pages = [];
-                                const totalDots = Math.min(5, totalPages);
-                                
-                                for (let i = 0; i < totalDots; i++) {
-                                    let pageNum;
-                                    if (totalPages <= 5) {
-                                        pageNum = i + 1;
-                                    } else if (page <= 3) {
-                                        pageNum = i + 1;
-                                    } else if (page > totalPages - 3) {
-                                        pageNum = totalPages - 4 + i;
-                                    } else {
-                                        pageNum = page - 2 + i;
-                                    }
-
-                                    const isActive = pageNum === page;
-                                    
-                                    pages.push(
-                                        <a
-                                            key={pageNum}
-                                            href={createPageUrl(pageNum)}
-                                            class={`inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'}`}
-                                        >
-                                            {pageNum}
-                                        </a>
-                                    );
-                                }
-                                
-                                return pages;
-                            })()}
+                            {pageNumbers.map((pageNum) => {
+                                const isActive = pageNum === page;
+                                return (
+                                    <a
+                                        href={createPageUrl(pageNum)}
+                                        class={`inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md transition-colors ${isActive ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'}`}
+                                    >
+                                        {pageNum}
+                                    </a>
+                                );
+                            })}
 
                             <!-- Next Button -->
                             {page < totalPages ? (
@@ -428,71 +489,6 @@ const createPageUrl = (pageNum: number) => {
         </div>
     </main>
 
-    <!-- Lightbox Modal -->
-    <div id="lightbox" class="fixed inset-0 z-50 hidden">
-        <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black bg-opacity-90" onclick="closeLightbox()"></div>
-        
-        <!-- Modal Content -->
-        <div class="relative h-full flex items-center justify-center p-4">
-            <!-- Close Button -->
-            <button 
-                onclick="closeLightbox()" 
-                class="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
-                aria-label="Close lightbox"
-            >
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-            
-            <!-- Navigation Buttons -->
-            <button 
-                onclick="previousImage()" 
-                id="prevImageBtn"
-                class="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 bg-black bg-opacity-50 rounded-full p-2"
-                aria-label="Previous image"
-            >
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-            </button>
-            
-            <button 
-                onclick="nextImage()" 
-                id="nextImageBtn"
-                class="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 bg-black bg-opacity-50 rounded-full p-2"
-                aria-label="Next image"
-            >
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-            </button>
-            
-            <!-- Image Container -->
-            <div class="max-w-5xl max-h-full flex flex-col">
-                <img 
-                    id="lightboxImage" 
-                    src="" 
-                    alt="" 
-                    class="max-h-[80vh] w-auto object-contain"
-                />
-                <!-- Image Info -->
-                <div class="bg-black bg-opacity-50 text-white p-4 mt-2 rounded">
-                    <h3 id="lightboxTitle" class="text-xl font-semibold mb-2"></h3>
-                    <p id="lightboxDescription" class="text-sm text-gray-300 mb-2"></p>
-                    <div class="flex items-center justify-between text-sm">
-                        <span id="lightboxDate" class="text-gray-400"></span>
-                        <div class="space-x-2">
-                            <span id="lightboxCategory" class="bg-blue-600 px-2 py-1 rounded text-xs"></span>
-                            <span id="lightboxProdi" class="bg-green-600 px-2 py-1 rounded text-xs"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <Footer slot="footer" />
 </BaseLayout>
 
@@ -503,130 +499,50 @@ const createPageUrl = (pageNum: number) => {
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
+    
+    /* Ensure images are visible */
+    .grid img {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    /* Glightbox link styling */
+    .glightbox {
+        display: block;
+        position: relative;
+        background-color: #f3f4f6;
+    }
 </style>
 
-<script define:vars={{ currentItems, allGalleryItems, categories, programStudiList }}>
-    // Lightbox functionality
-    let currentImageIndex = 0;
-    const galleryItems = currentItems;
+<!-- GLightbox JS -->
+<script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
 
-    function openLightbox(itemId) {
-        const item = galleryItems.find(item => item.id.toString() === itemId.toString());
-        if (!item) return;
-
-        currentImageIndex = galleryItems.findIndex(item => item.id.toString() === itemId.toString());
-        
-        const lightbox = document.getElementById('lightbox');
-        const lightboxImage = document.getElementById('lightboxImage');
-        const lightboxTitle = document.getElementById('lightboxTitle');
-        const lightboxDescription = document.getElementById('lightboxDescription');
-        const lightboxDate = document.getElementById('lightboxDate');
-        const lightboxCategory = document.getElementById('lightboxCategory');
-        const lightboxProdi = document.getElementById('lightboxProdi');
-
-        if (!lightbox || !lightboxImage) return;
-
-        // Update lightbox content
-        lightboxImage.src = item.image;
-        lightboxImage.alt = item.alt || item.title;
-        
-        if (lightboxTitle) lightboxTitle.textContent = item.title;
-        if (lightboxDescription) lightboxDescription.textContent = item.description || '';
-        
-        if (lightboxDate && item.date) {
-            lightboxDate.textContent = new Date(item.date).toLocaleDateString('id-ID', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        }
-        
-        if (lightboxCategory) {
-            if (item.category) {
-                const category = categories.find(c => c.slug === item.category);
-                lightboxCategory.textContent = category ? category.name : item.category;
-                lightboxCategory.style.display = 'inline-block';
-            } else {
-                lightboxCategory.style.display = 'none';
-            }
-        }
-        
-        if (lightboxProdi) {
-            if (item.programStudi) {
-                const prodi = programStudiList.find(p => p.slug === item.programStudi);
-                lightboxProdi.textContent = prodi ? prodi.name : item.programStudi;
-                lightboxProdi.style.display = 'inline-block';
-            } else {
-                lightboxProdi.style.display = 'none';
-            }
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const glightboxFactory = (window as any).GLightbox;
+        if (typeof glightboxFactory !== 'function') {
+            console.error('GLightbox is not available on window');
+            return;
         }
 
-        // Show lightbox
-        lightbox.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-
-        // Update navigation buttons
-        updateNavigationButtons();
-    }
-
-    function closeLightbox() {
-        const lightbox = document.getElementById('lightbox');
-        if (lightbox) {
-            lightbox.classList.add('hidden');
-            document.body.style.overflow = '';
-        }
-    }
-
-    function previousImage() {
-        if (currentImageIndex > 0) {
-            currentImageIndex--;
-            const item = galleryItems[currentImageIndex];
-            openLightbox(item.id);
-        }
-    }
-
-    function nextImage() {
-        if (currentImageIndex < galleryItems.length - 1) {
-            currentImageIndex++;
-            const item = galleryItems[currentImageIndex];
-            openLightbox(item.id);
-        }
-    }
-
-    function updateNavigationButtons() {
-        const prevBtn = document.getElementById('prevImageBtn');
-        const nextBtn = document.getElementById('nextImageBtn');
-        
-        if (prevBtn) {
-            prevBtn.style.display = currentImageIndex > 0 ? 'block' : 'none';
-        }
-        
-        if (nextBtn) {
-            nextBtn.style.display = currentImageIndex < galleryItems.length - 1 ? 'block' : 'none';
-        }
-    }
-
-    // Keyboard navigation
-    document.addEventListener('keydown', function(e) {
-        const lightbox = document.getElementById('lightbox');
-        if (lightbox && !lightbox.classList.contains('hidden')) {
-            switch(e.key) {
-                case 'Escape':
-                    closeLightbox();
-                    break;
-                case 'ArrowLeft':
-                    previousImage();
-                    break;
-                case 'ArrowRight':
-                    nextImage();
-                    break;
-            }
-        }
+        glightboxFactory({
+            touchNavigation: true,
+            loop: true,
+            autoplayVideos: false,
+            closeButton: true,
+            zoomable: true,
+            draggable: true,
+            dragAutoSnap: true,
+            dragToleranceX: 100,
+            dragToleranceY: 100,
+            preload: true,
+            skin: 'clean',
+            openEffect: 'zoom',
+            closeEffect: 'fade',
+            slideEffect: 'slide',
+            moreLength: 0,
+            descPosition: 'bottom',
+        });
     });
-
-    // Make functions globally available
-    window.openLightbox = openLightbox;
-    window.closeLightbox = closeLightbox;
-    window.previousImage = previousImage;
-    window.nextImage = nextImage;
 </script>
