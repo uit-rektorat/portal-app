@@ -2,11 +2,29 @@
 
 Website profile kampus Universitas Indonesia Timur (UIT) yang dibangun dengan Astro Framework, Tailwind CSS, dan integrasi Strapi Headless CMS.
 
+## 🎯 Latest Update: Unified Academic Units (v3.0.0)
+
+> **✨ Major Refactoring:** Menggabungkan Fakultas dan Pascasarjana dalam satu unified collection!
+
+**What's New:**
+- ✅ Satu collection "Academic Units" untuk Fakultas & Pascasarjana
+- ✅ Konsisten struktur data dengan field `unitType`
+- ✅ Support Dekan/Direktur + Kepala Prodi/Asisten Direktur
+- ✅ URL tetap terpisah: `/fakultas/[slug]` dan `/pascasarjana/[slug]`
+- ✅ Backward compatible - Frontend code tidak berubah
+
+**Quick Start:** [QUICK_START_UNIFIED.md](QUICK_START_UNIFIED.md) (~30 menit)  
+**Full Guide:** [UNIFIED_ACADEMIC_UNITS_GUIDE.md](UNIFIED_ACADEMIC_UNITS_GUIDE.md)  
+**Migration:** [REFACTORING_SUMMARY.md](REFACTORING_SUMMARY.md)
+
+---
+
 ## 🚀 Fitur
 
 - **Mobile-First Design**: Responsif di semua perangkat
 - **Modern & Professional**: Tampilan modern dengan warna resmi UIT
 - **Hero Slider with Multiple Layouts**: 4 variasi layout slider (default, full-image, centered, minimal)
+- **Unified Academic Units**: Fakultas dan Pascasarjana dalam satu collection dengan struktur konsisten
 - **Gallery System**: Sistem galeri dengan search, filter, dan lightbox
 - **Modular Components**: Komponen yang dapat digunakan kembali
 - **Strapi CMS Integration**: Content management dengan Strapi REST API
@@ -29,19 +47,33 @@ Website profile kampus Universitas Indonesia Timur (UIT) yang dibangun dengan As
 │   │   │   ├── CampusInfo.astro
 │   │   │   ├── Gallery.astro
 │   │   │   └── Testimonials.astro
+│   │   ├── fakultas/   # Faculty layouts (3 variants)
+│   │   │   ├── FakultasLayoutModern.astro
+│   │   │   ├── FakultasLayoutClassic.astro
+│   │   │   └── FakultasLayoutMinimal.astro
+│   │   ├── pascasarjana/  # Graduate programs layout
+│   │   │   └── PascasarjanaLayout.astro
 │   │   ├── Header.astro
 │   │   └── Footer.astro
 │   ├── layouts/         # Page layouts
 │   │   └── BaseLayout.astro
 │   ├── lib/            # Utilities and API clients
-│   │   └── strapi.ts   # Strapi REST API client
+│   │   ├── strapi.ts   # Strapi REST API client (Unified Academic Units)
+│   │   └── markdown.ts # Markdown parser
 │   ├── pages/          # Page routes
-│   │   ├── index.astro      # Home page (Beranda)
-│   │   ├── profile.astro    # Profile page
+│   │   ├── index.astro          # Home page (Beranda)
+│   │   ├── profile.astro        # Profile page
+│   │   ├── fakultas/
+│   │   │   └── [slug].astro     # Dynamic faculty pages
+│   │   ├── pascasarjana/
+│   │   │   └── [slug].astro     # Dynamic graduate program pages
+│   │   ├── news/
+│   │   │   ├── index.astro      # News listing
+│   │   │   └── [slug].astro     # News detail
 │   │   └── gallery/
-│   │       └── index.astro  # Gallery page
+│   │       └── index.astro      # Gallery page
 │   └── styles/         # Global styles
-│       └── global.css  # Tailwind CSS imports
+│       └── global.css  # Tailwind CSS + UIT colors
 ├── astro.config.mjs
 ├── package.json
 └── tsconfig.json
@@ -84,10 +116,26 @@ Halaman profil dengan:
 - **[TypeScript](https://www.typescriptlang.org/)**: Type safety
 - **[GraphQL Request](https://github.com/jasonkuhrt/graphql-request)**: API client untuk Strapi
 
-## 📚 Panduan API
+## 📚 Dokumentasi & Panduan
 
-- **[STRAPI_GUIDE.md](./STRAPI_GUIDE.md)**: Panduan lengkap setup Strapi CMS
-- **[GALLERY_STRAPI_GUIDE.md](./GALLERY_STRAPI_GUIDE.md)**: Panduan API Strapi untuk Gallery
+### 🎓 Academic Units (Fakultas & Pascasarjana)
+- **[QUICK_START_UNIFIED.md](./QUICK_START_UNIFIED.md)** ⚡ - Quick start setup (30 menit)
+- **[UNIFIED_ACADEMIC_UNITS_GUIDE.md](./UNIFIED_ACADEMIC_UNITS_GUIDE.md)** 📖 - Complete guide
+- **[REFACTORING_SUMMARY.md](./REFACTORING_SUMMARY.md)** 🔄 - Migration guide
+
+### 📝 Setup Guides
+- **[STRAPI_GUIDE.md](./STRAPI_GUIDE.md)** - Setup Strapi CMS basics
+- **[GALLERY_STRAPI_GUIDE.md](./GALLERY_STRAPI_GUIDE.md)** - Gallery system setup
+- **[HERO_SLIDER_GUIDE.md](./HERO_SLIDER_GUIDE.md)** - Hero slider configuration
+- **[CAMPUS_INFO_STRAPI_GUIDE.md](./CAMPUS_INFO_STRAPI_GUIDE.md)** - Campus info setup
+
+### ⚠️ Deprecated Guides (Use UNIFIED instead)
+- ~~FAKULTAS_STRAPI_GUIDE.md~~ → Use UNIFIED_ACADEMIC_UNITS_GUIDE.md
+- ~~GRADUATE_PROGRAMS_GUIDE.md~~ → Use UNIFIED_ACADEMIC_UNITS_GUIDE.md
+
+### 📋 Others
+- **[CHANGELOG.md](./CHANGELOG.md)** - Version history
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Deployment guide
 
 ## 📦 Instalasi & Menjalankan
 

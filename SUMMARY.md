@@ -1,28 +1,47 @@
 # Portal UIT - Project Summary
 
+## 🎯 Latest Update: v3.0.0 - Unified Academic Units (Jan 13, 2026)
+
+### ✨ Major Refactoring Completed
+- ✅ **Unified Collection "Academic Units"** - Menggabungkan Fakultas & Pascasarjana
+- ✅ **New TypeScript Interfaces** - `AcademicUnit` dengan `unitType` field
+- ✅ **Backward Compatible Functions** - Legacy code tetap jalan
+- ✅ **Comprehensive Documentation** - 4 guide files baru/updated
+- ✅ **Migration Path** - Manual & script migration tersedia
+
+**Key Benefits:**
+- One collection untuk semua unit akademik
+- Konsisten struktur (Leader, Assistants, Programs)
+- URL tetap terpisah (`/fakultas/[slug]`, `/pascasarjana/[slug]`)
+- Mudah maintenance & scalable
+
+---
+
 ## ✅ Yang Sudah Dibuat
 
 ### 1. **Setup & Configuration**
 - ✅ Astro framework terinstall dan terkonfigurasi
-- ✅ Tailwind CSS v4 terintegrasi
-- ✅ GraphQL client (graphql-request) untuk Strapi
+- ✅ Tailwind CSS v4 terintegrasi dengan custom UIT colors
+- ✅ REST API client untuk Strapi (transisi dari GraphQL)
 - ✅ TypeScript configuration
 - ✅ Environment variables setup (.env.example)
 
 ### 2. **Layout & Structure**
 - ✅ **BaseLayout.astro**: Layout utama dengan slot untuk header, content, dan footer
-- ✅ **Header.astro**: Navigation bar responsif dengan mobile menu
+- ✅ **Header.astro**: Navigation bar responsif dengan mobile menu + social media
 - ✅ **Footer.astro**: Footer dengan informasi kontak dan social media links
 
 ### 3. **Halaman (Pages)**
 
 #### Beranda (index.astro)
-✅ Halaman home lengkap dengan 5 section:
-1. **Hero/Slider**: Banner utama dengan auto-rotating slides
+✅ Halaman home lengkap dengan 7 sections:
+1. **Hero/Slider**: Multi-layout banner (default, full-image, centered, minimal)
 2. **Quick Access**: Grid 6 akses cepat ke layanan kampus
 3. **Keunggulan Kampus**: Grid 6 keunggulan UIT
-4. **Berita/Pengumuman**: Grid 6 berita terbaru dengan kategori
-5. **Testimoni**: Carousel testimoni alumni & mahasiswa
+4. **Campus Info**: Informasi kampus dengan statistik
+5. **Galeri**: Preview galeri kampus
+6. **Berita/Pengumuman**: Grid 6 berita terbaru dengan kategori
+7. **Testimoni**: Carousel testimoni alumni & mahasiswa
 
 #### Profil (profile.astro)
 ✅ Halaman profil lengkap dengan:
@@ -31,23 +50,70 @@
 3. **Sejarah**: Sejarah lengkap UIT
 4. **Call to Action**: CTA section untuk pendaftaran
 
+#### Fakultas ([slug].astro)
+✅ Dynamic pages dengan 3 layout variants:
+- **Modern**: Visual-heavy dengan images & stats
+- **Classic**: Fokus konten dengan struktur organisasi
+- **Minimal**: Clean & simple layout
+
+#### Pascasarjana ([slug].astro)
+✅ Dynamic page untuk program S2/S3:
+- Hero dengan gradient blue
+- Program cards dengan coordinator info
+- Duration, tuition, accreditation display
+
+#### Gallery (index.astro)
+✅ Gallery system lengkap:
+- Search & filter (category, prodi)
+- Grid responsive layout
+- Lightbox untuk preview
+- Pagination support
+
+#### News
+✅ News system:
+- index.astro: News listing
+- [slug].astro: News detail page
+
 ### 4. **Components**
 
 #### Home Components (src/components/home/)
-- ✅ **HeroSlider.astro**: Slider dengan navigation dots, auto-play
+- ✅ **HeroSlider.astro**: Multi-layout slider dengan keyboard navigation
 - ✅ **QuickAccess.astro**: Grid akses cepat dengan icons
 - ✅ **CampusAdvantages.astro**: Grid keunggulan dengan hover effects
+- ✅ **CampusInfo.astro**: Info kampus dengan image & stats
+- ✅ **Gallery.astro**: Preview gallery dengan lazy loading
 - ✅ **NewsSection.astro**: Grid berita dengan kategori & tanggal
 - ✅ **Testimonials.astro**: Carousel testimoni dengan ratings
 
-#### Global Components
-- ✅ **Header.astro**: Navbar dengan mobile menu toggle
-- ✅ **Footer.astro**: Footer dengan 4 kolom informasi + social media
+#### Faculty Components (src/components/fakultas/)
+- ✅ **FakultasLayoutModern.astro**: Modern layout dengan visual
+- ✅ **FakultasLayoutClassic.astro**: Traditional academic layout
+- ✅ **FakultasLayoutMinimal.astro**: Minimalist clean layout
 
-### 5. **Strapi Integration**
-- ✅ **strapi.ts**: GraphQL client dengan semua query functions
-- ✅ TypeScript interfaces untuk semua data types
-- ✅ Error handling untuk API calls
+#### Graduate Program Components (src/components/pascasarjana/)
+- ✅ **PascasarjanaLayout.astro**: Layout untuk program S2/S3
+
+#### Global Components
+- ✅ **Header.astro**: Navbar dengan mobile menu + social media
+- ✅ **Footer.astro**: Footer dengan 4 kolom informasi
+
+### 5. **Strapi Integration (Unified Academic Units)**
+- ✅ **strapi.ts**: REST API client dengan unified functions
+- ✅ **New Interfaces**:
+  - `AcademicUnit` - Unified interface untuk Fakultas & Pascasarjana
+  - `Fakultas` (extends AcademicUnit) - Legacy compatibility
+  - `Pascasarjana` - Legacy compatibility
+- ✅ **New Functions**:
+  - `getAllAcademicUnits()` - Fetch all units
+  - `getAcademicUnit(slug)` - Fetch single unit
+  - `transformAcademicUnit()` - Data transformer
+- ✅ **Legacy Functions** (Updated, backward compatible):
+  - `getAllFakultas()` - Filter fakultas dari academic units
+  - `getFakultas(slug)` - Get fakultas by slug
+  - `getAllPascasarjana()` - Filter pascasarjana dari academic units
+  - `getPascasarjana(slug)` - Get pascasarjana by slug
+- ✅ **markdown.ts**: Markdown parser dengan custom styling
+- ✅ Error handling untuk semua API calls
 - ✅ Default/fallback data untuk development
 
 ### 6. **Styling & Design**

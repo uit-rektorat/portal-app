@@ -1,5 +1,25 @@
 # Graduate Programs (Pascasarjana) - Panduan Lengkap
 
+> ⚠️ **DEPRECATED - Gunakan UNIFIED_ACADEMIC_UNITS_GUIDE.md**
+> 
+> Guide ini sudah tidak digunakan lagi. Kami telah menggabungkan Collection "Fakultas" dan "Graduate Programs" menjadi satu collection terpadu bernama **"Academic Units"**.
+> 
+> **Mengapa berubah?**
+> - Struktur data terlalu kompleks dengan nested "Programs" di dalam "Graduate Programs"
+> - Tidak konsisten dengan struktur Fakultas
+> - Sulit maintenance dan membingungkan
+> 
+> **Solusi baru:**
+> - ✅ Unified collection "Academic Units" untuk Fakultas & Pascasarjana
+> - ✅ Field `unitType` untuk membedakan: `fakultas` atau `pascasarjana`
+> - ✅ Leader bisa Dekan (fakultas) atau Direktur (pascasarjana)
+> - ✅ Assistants bisa Kepala Prodi atau Asisten Direktur
+> - ✅ URL tetap terpisah untuk SEO
+> 
+> 📖 **Silakan gunakan:** [UNIFIED_ACADEMIC_UNITS_GUIDE.md](UNIFIED_ACADEMIC_UNITS_GUIDE.md)
+
+---
+
 Panduan lengkap untuk membuat dan mengelola halaman Program Pascasarjana di website Universitas Indonesia Timur.
 
 ---

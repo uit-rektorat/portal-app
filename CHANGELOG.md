@@ -4,6 +4,99 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [3.0.0] - January 13, 2026 - Unified Academic Units Refactoring 🎓
+
+### 🔄 **Major Refactoring** - Academic Units Collection
+
+#### Breaking Changes (Backend Only - Frontend Compatible)
+- **Merged Collections**: Gabungkan "Faculties" dan "Graduate Programs" menjadi "Academic Units"
+- **New Collection**: `academic-units` dengan field `unitType` (`fakultas` | `pascasarjana`)
+- **Unified Leadership**: Field `Leader` menggantikan `Dean` (fakultas) dan baru untuk pascasarjana
+- **Unified Assistants**: Field `Assistants` menggantikan `Heads` (fakultas) dan baru untuk pascasarjana
+
+#### What's New
+✅ **One Collection for All** - Fakultas dan Pascasarjana dalam satu tempat  
+✅ **Consistent Structure** - Struktur data seragam dan mudah dipahami  
+✅ **Flexible Leadership** - Leader bisa Dekan (fakultas) atau Direktur (pascasarjana)  
+✅ **Better Programs** - Support koordinator untuk program pascasarjana  
+✅ **Backward Compatible** - Frontend code tidak perlu diubah  
+
+#### New Interface: `AcademicUnit`
+```typescript
+export interface AcademicUnit {
+  unitType: 'fakultas' | 'pascasarjana';
+  leader?: { name, position, title, photo, education };
+  assistants?: [{ name, position, title, program?, photo, education }];
+  programs?: [{ 
+    name, degree, description, accreditation,
+    duration?, tuition?, coordinator?  // For pascasarjana
+  }];
+  // ... + all common fields
+}
+```
+
+#### New Functions
+- `getAllAcademicUnits()` - Fetch semua unit (fakultas + pascasarjana)
+- `getAcademicUnit(slug)` - Fetch single unit by slug
+- `transformAcademicUnit()` - Helper untuk transform data
+
+#### Updated Functions (Backward Compatible)
+- `getAllFakultas()` - Sekarang filter dari `academic-units` dengan `unitType='fakultas'`
+- `getFakultas(slug)` - Filter fakultas dari unified collection
+- `getAllPascasarjana()` - Filter dari `academic-units` dengan `unitType='pascasarjana'`
+- `getPascasarjana(slug)` - Filter pascasarjana dari unified collection
+
+### 📚 Documentation
+
+#### New Guides
+- ✨ **UNIFIED_ACADEMIC_UNITS_GUIDE.md** - Complete guide untuk unified collection
+- ✨ **REFACTORING_SUMMARY.md** - Summary lengkap refactoring & migration guide
+
+#### Updated Guides
+- ⚠️ **FAKULTAS_STRAPI_GUIDE.md** - Added deprecation warning
+- ⚠️ **GRADUATE_PROGRAMS_GUIDE.md** - Added deprecation warning
+
+### 🔧 Migration Required
+
+**Old Structure (Deprecated):**
+```
+Collections: "faculties" + "graduate-programs" (2 collections)
+Graduate Program → Programs (nested, confusing)
+```
+
+**New Structure (Recommended):**
+```
+Collection: "academic-units" (1 unified collection)
+unitType field untuk membedakan fakultas vs pascasarjana
+```
+
+**Migration Steps:**
+1. Create "Academic Units" collection di Strapi (follow UNIFIED_ACADEMIC_UNITS_GUIDE.md)
+2. Input sample data (1 fakultas + 1 pascasarjana)
+3. Test di frontend: `/fakultas/[slug]` dan `/pascasarjana/[slug]`
+4. Migrate all data dari old collections
+5. Delete old "faculties" and "graduate-programs" collections
+
+### 🎯 Benefits
+
+| Feature | Before | After |
+|---------|--------|-------|
+| Collections | 2 (Faculties, Graduate Programs) | 1 (Academic Units) |
+| Consistency | ❌ Different structures | ✅ Unified structure |
+| Pascasarjana Leader | ❌ Not supported | ✅ Direktur + Asisten |
+| Program Coordinator | ❌ Nested confusing | ✅ Clean optional field |
+| Maintenance | ❌ 2 places | ✅ 1 place |
+| URLs | Separate (good for SEO) | ✅ Still separate |
+
+### 📁 Files Changed
+- `src/lib/strapi.ts` - Added unified interfaces & functions
+- `UNIFIED_ACADEMIC_UNITS_GUIDE.md` - New comprehensive guide
+- `REFACTORING_SUMMARY.md` - New migration summary
+- `FAKULTAS_STRAPI_GUIDE.md` - Deprecated with warning
+- `GRADUATE_PROGRAMS_GUIDE.md` - Deprecated with warning
+
+---
+
 ## [2.0.0] - January 2026 - Hero Slider Enhancement
 
 ### 🎨 Added - Hero Slider Multi-Layout System

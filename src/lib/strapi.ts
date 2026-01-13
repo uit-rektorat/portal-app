@@ -105,8 +105,10 @@ export interface Profile {
   history: string;
 }
 
-export interface Fakultas {
+// Unified Academic Unit (supports both Fakultas and Pascasarjana)
+export interface AcademicUnit {
   id: string;
+  unitType: 'fakultas' | 'pascasarjana';
   name: string;
   slug: string;
   tagline?: string;
@@ -117,6 +119,8 @@ export interface Fakultas {
   heroImage?: string;
   profileImage?: string;
   layout?: 'modern' | 'classic' | 'minimal';
+  
+  // Components
   stats?: Array<{
     label: string;
     value: string;
@@ -137,26 +141,49 @@ export interface Fakultas {
     date?: string;
     image?: string;
   }>;
-  dean?: {
+  
+  // Leader (Dekan for Fakultas, Direktur for Pascasarjana)
+  leader?: {
     name: string;
-    title?: string;
+    position?: string; // "Dekan" or "Direktur"
+    title?: string;    // "Prof. Dr.", "Dr."
     photo?: string;
     education?: string;
   };
-  heads?: Array<{
+  
+  // Assistants (Kepala Prodi for Fakultas, Asisten Direktur for Pascasarjana)
+  assistants?: Array<{
     name: string;
+    position: string;  // "Kepala Program Studi" or "Asisten Direktur"
     title?: string;
-    program: string;
+    program?: string;  // For Kepala Prodi only
     photo?: string;
     education?: string;
   }>;
+  
+  // Programs
   programs?: Array<{
     name: string;
     degree: string;
     description?: string;
     accreditation?: string;
     link?: string;
+    duration?: string;    // For Pascasarjana only
+    tuition?: string;     // For Pascasarjana only
+    coordinator?: {       // For Pascasarjana only
+      name: string;
+      title?: string;
+      photo?: string;
+      education?: string;
+    };
   }>;
+}
+
+// Legacy interfaces (kept for backward compatibility)
+export interface Fakultas extends AcademicUnit {
+  unitType: 'fakultas';
+  dean?: AcademicUnit['leader'];
+  heads?: AcademicUnit['assistants'];
 }
 
 export interface Pascasarjana {
@@ -442,71 +469,16 @@ export const getProfile = async (): Promise<Profile | null> => {
 // Fetch all Fakultas
 export const getAllFakultas = async (): Promise<Fakultas[]> => {
   try {
-    const data = await fetchStrapi('/faculties?populate[0]=logo&populate[1]=heroImage&populate[2]=profileImage&populate[3]=Statistics&populate[4]=Facilities.image&populate[5]=Achievements&populate[6]=Activities.image&populate[7]=Dean.photo&populate[8]=Heads.photo&populate[9]=Programs&sort=name:asc');
-
-    const fakultas = data.data?.map((item: any) => {
-      const attrs = item.attributes || item;
-
-      // Helper to get image URL
-      const getImageUrl = (image: any) => {
-        if (!image) return undefined;
-        const url = image?.url || image?.data?.attributes?.url;
-        return url ? `${STRAPI_URL}${url}` : undefined;
-      };
-
-      return {
-        id: item.id.toString(),
-        name: attrs.name || item.name || '',
-        slug: attrs.slug || item.slug || '',
-        tagline: attrs.tagline || item.tagline || '',
-        profile: attrs.profile || item.profile || '',
-        vision: attrs.vision || item.vision || '',
-        mission: attrs.mission || item.mission || '',
-        logo: getImageUrl(attrs.logo || item.logo),
-        heroImage: getImageUrl(attrs.heroImage || item.heroImage),
-        profileImage: getImageUrl(attrs.profileImage || item.profileImage),
-        layout: attrs.layout || item.layout || 'modern',
-        stats: attrs.Statistics || attrs.stats || item.Statistics || [],
-        facilities: (attrs.Facilities || attrs.facilities || item.Facilities || []).map((f: any) => ({
-          name: f.name || '',
-          description: f.description || '',
-          image: getImageUrl(f.image),
-        })),
-        achievements: (attrs.Achievements || attrs.achievements || item.Achievements || []).map((a: any) => ({
-          title: a.title || '',
-          description: a.description || '',
-          year: a.year || '',
-        })),
-        activities: (attrs.Activities || attrs.activities || item.Activities || []).map((act: any) => ({
-          title: act.title || '',
-          description: act.description || '',
-          date: act.date || '',
-          image: getImageUrl(act.image),
-        })),
-        dean: (attrs.Dean || attrs.dean || item.Dean) ? {
-          name: (attrs.Dean || attrs.dean || item.Dean).name || '',
-          title: (attrs.Dean || attrs.dean || item.Dean).title || '',
-          photo: getImageUrl((attrs.Dean || attrs.dean || item.Dean).photo),
-          education: (attrs.Dean || attrs.dean || item.Dean).education || '',
-        } : undefined,
-        heads: (attrs.Heads || attrs.heads || item.Heads || []).map((h: any) => ({
-          name: h.name || '',
-          title: h.title || '',
-          program: h.program || '',
-          photo: getImageUrl(h.photo),
-          education: h.education || '',
-        })),
-        programs: (attrs.Programs || attrs.programs || item.Programs || []).map((p: any) => ({
-          name: p.name || '',
-          degree: p.degree || '',
-          description: p.description || '',
-          accreditation: p.accreditation || '',
-          link: p.link || '',
-        })),
-      };
-    }) || [];
-
-    return fakultas;
+    // Use unified collection, filter by fakultas type
+    const units = await getAllAcademicUnits();
+    const fakultas = units.filter(u => u.unitType === 'fakultas');
+    
+    // Transform to legacy Fakultas interface for backward compatibility
+    return fakultas.map(unit => ({
+      ...unit,
+      dean: unit.leader,
+      heads: unit.assistants,
+    } as Fakultas));
   } catch (error) {
     console.error('Error fetching fakultas:', error);
     return [];
@@ -516,72 +488,19 @@ export const getAllFakultas = async (): Promise<Fakultas[]> => {
 // Fetch single Fakultas by slug
 export const getFakultas = async (slug: string): Promise<Fakultas | null> => {
   try {
-    const data = await fetchStrapi(`/faculties?filters[slug][$eq]=${slug}&populate[0]=logo&populate[1]=heroImage&populate[2]=profileImage&populate[3]=Statistics&populate[4]=Facilities.image&populate[5]=Achievements&populate[6]=Activities.image&populate[7]=Dean.photo&populate[8]=Heads.photo&populate[9]=Programs`);
-
-    if (!data.data || data.data.length === 0) {
+    // Use unified collection
+    const unit = await getAcademicUnit(slug);
+    
+    if (!unit || unit.unitType !== 'fakultas') {
       return null;
     }
 
-    const item = data.data[0];
-    const attrs = item.attributes || item;
-
-    // Helper to get image URL
-    const getImageUrl = (image: any) => {
-      if (!image) return undefined;
-      const url = image?.url || image?.data?.attributes?.url;
-      return url ? `${STRAPI_URL}${url}` : undefined;
-    };
-
+    // Transform to legacy Fakultas interface for backward compatibility
     return {
-      id: item.id.toString(),
-      name: attrs.name || item.name || '',
-      slug: attrs.slug || item.slug || '',
-      tagline: attrs.tagline || item.tagline || '',
-      profile: attrs.profile || item.profile || '',
-      vision: attrs.vision || item.vision || '',
-      mission: attrs.mission || item.mission || '',
-      logo: getImageUrl(attrs.logo || item.logo),
-      heroImage: getImageUrl(attrs.heroImage || item.heroImage),
-      profileImage: getImageUrl(attrs.profileImage || item.profileImage),
-      layout: attrs.layout || item.layout || 'modern',
-      stats: attrs.Statistics || attrs.stats || item.Statistics || [],
-      facilities: (attrs.Facilities || attrs.facilities || item.Facilities || []).map((f: any) => ({
-        name: f.name || '',
-        description: f.description || '',
-        image: getImageUrl(f.image),
-      })),
-      achievements: (attrs.Achievements || attrs.achievements || item.Achievements || []).map((a: any) => ({
-        title: a.title || '',
-        description: a.description || '',
-        year: a.year || '',
-      })),
-      activities: (attrs.Activities || attrs.activities || item.Activities || []).map((act: any) => ({
-        title: act.title || '',
-        description: act.description || '',
-        date: act.date || '',
-        image: getImageUrl(act.image),
-      })),
-      dean: (attrs.Dean || attrs.dean || item.Dean) ? {
-        name: (attrs.Dean || attrs.dean || item.Dean).name || '',
-        title: (attrs.Dean || attrs.dean || item.Dean).title || '',
-        photo: getImageUrl((attrs.Dean || attrs.dean || item.Dean).photo),
-        education: (attrs.Dean || attrs.dean || item.Dean).education || '',
-      } : undefined,
-      heads: (attrs.Heads || attrs.heads || item.Heads || []).map((h: any) => ({
-        name: h.name || '',
-        title: h.title || '',
-        program: h.program || '',
-        photo: getImageUrl(h.photo),
-        education: h.education || '',
-      })),
-      programs: (attrs.Programs || attrs.programs || item.Programs || []).map((p: any) => ({
-        name: p.name || '',
-        degree: p.degree || '',
-        description: p.description || '',
-        accreditation: p.accreditation || '',
-        link: p.link || '',
-      })),
-    };
+      ...unit,
+      dean: unit.leader,
+      heads: unit.assistants,
+    } as Fakultas;
   } catch (error) {
     console.error('Error fetching fakultas:', error);
     return null;
@@ -591,43 +510,20 @@ export const getFakultas = async (slug: string): Promise<Fakultas | null> => {
 // Fetch all Pascasarjana
 export const getAllPascasarjana = async (): Promise<Pascasarjana[]> => {
   try {
-    const data = await fetchStrapi('/graduate-programs?populate[0]=heroImage&populate[1]=Programs.Coordinator.photo&sort=name:asc');
-
-    const pascasarjana = data.data?.map((item: any) => {
-      const attrs = item.attributes || item;
-
-      // Helper to get image URL
-      const getImageUrl = (image: any) => {
-        if (!image) return undefined;
-        const url = image?.url || image?.data?.attributes?.url;
-        return url ? `${STRAPI_URL}${url}` : undefined;
-      };
-
-      return {
-        id: item.id.toString(),
-        name: attrs.name || item.name || '',
-        slug: attrs.slug || item.slug || '',
-        tagline: attrs.tagline || item.tagline || '',
-        description: attrs.description || item.description || '',
-        heroImage: getImageUrl(attrs.heroImage || item.heroImage),
-        programs: (attrs.Programs || attrs.programs || item.Programs || []).map((p: any) => ({
-          name: p.name || '',
-          degree: p.degree || '',
-          description: p.description || '',
-          accreditation: p.accreditation || '',
-          duration: p.duration || '',
-          tuition: p.tuition || '',
-          coordinator: (p.Coordinator || p.coordinator) ? {
-            name: (p.Coordinator || p.coordinator).name || '',
-            photo: getImageUrl((p.Coordinator || p.coordinator).photo),
-            title: (p.Coordinator || p.coordinator).title || '',
-            education: (p.Coordinator || p.coordinator).education || '',
-          } : undefined,
-        })),
-      };
-    }) || [];
-
-    return pascasarjana;
+    // Use unified collection, filter by pascasarjana type
+    const units = await getAllAcademicUnits();
+    const pascasarjana = units.filter(u => u.unitType === 'pascasarjana');
+    
+    // Transform to legacy Pascasarjana interface for backward compatibility
+    return pascasarjana.map(unit => ({
+      id: unit.id,
+      name: unit.name,
+      slug: unit.slug,
+      tagline: unit.tagline,
+      description: unit.profile, // Use profile as description
+      heroImage: unit.heroImage,
+      programs: unit.programs || [],
+    }));
   } catch (error) {
     console.error('Error fetching pascasarjana:', error);
     return [];
@@ -637,43 +533,22 @@ export const getAllPascasarjana = async (): Promise<Pascasarjana[]> => {
 // Fetch single Pascasarjana by slug
 export const getPascasarjana = async (slug: string): Promise<Pascasarjana | null> => {
   try {
-    const data = await fetchStrapi(`/graduate-programs?filters[slug][$eq]=${slug}&populate[0]=heroImage&populate[1]=Programs.Coordinator.photo`);
-
-    if (!data.data || data.data.length === 0) {
+    // Use unified collection
+    const unit = await getAcademicUnit(slug);
+    
+    if (!unit || unit.unitType !== 'pascasarjana') {
       return null;
     }
 
-    const item = data.data[0];
-    const attrs = item.attributes || item;
-
-    // Helper to get image URL
-    const getImageUrl = (image: any) => {
-      if (!image) return undefined;
-      const url = image?.url || image?.data?.attributes?.url;
-      return url ? `${STRAPI_URL}${url}` : undefined;
-    };
-
+    // Transform to legacy Pascasarjana interface for backward compatibility
     return {
-      id: item.id.toString(),
-      name: attrs.name || item.name || '',
-      slug: attrs.slug || item.slug || '',
-      tagline: attrs.tagline || item.tagline || '',
-      description: attrs.description || item.description || '',
-      heroImage: getImageUrl(attrs.heroImage || item.heroImage),
-      programs: (attrs.Programs || attrs.programs || item.Programs || []).map((p: any) => ({
-        name: p.name || '',
-        degree: p.degree || '',
-        description: p.description || '',
-        accreditation: p.accreditation || '',
-        duration: p.duration || '',
-        tuition: p.tuition || '',
-        coordinator: (p.Coordinator || p.coordinator) ? {
-          name: (p.Coordinator || p.coordinator).name || '',
-          photo: getImageUrl((p.Coordinator || p.coordinator).photo),
-          title: (p.Coordinator || p.coordinator).title || '',
-          education: (p.Coordinator || p.coordinator).education || '',
-        } : undefined,
-      })),
+      id: unit.id,
+      name: unit.name,
+      slug: unit.slug,
+      tagline: unit.tagline,
+      description: unit.profile, // Use profile as description
+      heroImage: unit.heroImage,
+      programs: unit.programs || [],
     };
   } catch (error) {
     console.error('Error fetching pascasarjana:', error);
@@ -927,3 +802,118 @@ export const getGalleryBySlug = async (slug: string): Promise<Gallery | null> =>
     return null;
   }
 };
+
+// ============================================
+// UNIFIED ACADEMIC UNITS (Fakultas + Pascasarjana)
+// ============================================
+
+// Helper function to transform academic unit data
+const transformAcademicUnit = (item: any): AcademicUnit => {
+  const attrs = item.attributes || item;
+
+  // Helper to get image URL
+  const getImageUrl = (image: any) => {
+    if (!image) return undefined;
+    const url = image?.url || image?.data?.attributes?.url;
+    return url ? `${STRAPI_URL}${url}` : undefined;
+  };
+
+  return {
+    id: item.id.toString(),
+    unitType: attrs.unitType || 'fakultas',
+    name: attrs.name || item.name || '',
+    slug: attrs.slug || item.slug || '',
+    tagline: attrs.tagline || item.tagline || '',
+    profile: attrs.profile || item.profile || '',
+    vision: attrs.vision || item.vision || '',
+    mission: attrs.mission || item.mission || '',
+    logo: getImageUrl(attrs.logo || item.logo),
+    heroImage: getImageUrl(attrs.heroImage || item.heroImage),
+    profileImage: getImageUrl(attrs.profileImage || item.profileImage),
+    layout: attrs.layout || item.layout || 'modern',
+    stats: attrs.Statistics || attrs.stats || item.Statistics || [],
+    facilities: (attrs.Facilities || attrs.facilities || item.Facilities || []).map((f: any) => ({
+      name: f.name || '',
+      description: f.description || '',
+      image: getImageUrl(f.image),
+    })),
+    achievements: (attrs.Achievements || attrs.achievements || item.Achievements || []).map((a: any) => ({
+      title: a.title || '',
+      description: a.description || '',
+      year: a.year || '',
+    })),
+    activities: (attrs.Activities || attrs.activities || item.Activities || []).map((act: any) => ({
+      title: act.title || '',
+      description: act.description || '',
+      date: act.date || '',
+      image: getImageUrl(act.image),
+    })),
+    leader: (attrs.Leader || attrs.leader || item.Leader) ? {
+      name: (attrs.Leader || attrs.leader || item.Leader).name || '',
+      position: (attrs.Leader || attrs.leader || item.Leader).position || '',
+      title: (attrs.Leader || attrs.leader || item.Leader).title || '',
+      photo: getImageUrl((attrs.Leader || attrs.leader || item.Leader).photo),
+      education: (attrs.Leader || attrs.leader || item.Leader).education || '',
+    } : undefined,
+    assistants: (attrs.Assistants || attrs.assistants || item.Assistants || []).map((h: any) => ({
+      name: h.name || '',
+      position: h.position || '',
+      title: h.title || '',
+      program: h.program || '',
+      photo: getImageUrl(h.photo),
+      education: h.education || '',
+    })),
+    programs: (attrs.Programs || attrs.programs || item.Programs || []).map((p: any) => ({
+      name: p.name || '',
+      degree: p.degree || '',
+      description: p.description || '',
+      accreditation: p.accreditation || '',
+      link: p.link || '',
+      duration: p.duration || '',
+      tuition: p.tuition || '',
+      coordinator: (p.Coordinator || p.coordinator) ? {
+        name: (p.Coordinator || p.coordinator).name || '',
+        photo: getImageUrl((p.Coordinator || p.coordinator).photo),
+        title: (p.Coordinator || p.coordinator).title || '',
+        education: (p.Coordinator || p.coordinator).education || '',
+      } : undefined,
+    })),
+  };
+};
+
+/**
+ * Fetch all Academic Units (Fakultas + Pascasarjana)
+ * @returns Promise<AcademicUnit[]>
+ */
+export const getAllAcademicUnits = async (): Promise<AcademicUnit[]> => {
+  try {
+    const data = await fetchStrapi('/academic-units?populate[0]=logo&populate[1]=heroImage&populate[2]=profileImage&populate[3]=Statistics&populate[4]=Facilities.image&populate[5]=Achievements&populate[6]=Activities.image&populate[7]=Leader.photo&populate[8]=Assistants.photo&populate[9]=Programs.Coordinator.photo&sort=name:asc');
+
+    const units = data.data?.map(transformAcademicUnit) || [];
+    return units;
+  } catch (error) {
+    console.error('Error fetching academic units:', error);
+    return [];
+  }
+};
+
+/**
+ * Fetch single Academic Unit by slug
+ * @param slug - The slug of the academic unit
+ * @returns Promise<AcademicUnit | null>
+ */
+export const getAcademicUnit = async (slug: string): Promise<AcademicUnit | null> => {
+  try {
+    const data = await fetchStrapi(`/academic-units?filters[slug][$eq]=${slug}&populate[0]=logo&populate[1]=heroImage&populate[2]=profileImage&populate[3]=Statistics&populate[4]=Facilities.image&populate[5]=Achievements&populate[6]=Activities.image&populate[7]=Leader.photo&populate[8]=Assistants.photo&populate[9]=Programs.Coordinator.photo`);
+
+    if (!data.data || data.data.length === 0) {
+      return null;
+    }
+
+    return transformAcademicUnit(data.data[0]);
+  } catch (error) {
+    console.error('Error fetching academic unit:', error);
+    return null;
+  }
+};
+

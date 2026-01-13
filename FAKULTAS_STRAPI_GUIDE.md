@@ -1,5 +1,18 @@
 # Panduan Setup Fakultas di Strapi
 
+> ⚠️ **DEPRECATED - Gunakan UNIFIED_ACADEMIC_UNITS_GUIDE.md**
+> 
+> Guide ini sudah tidak digunakan lagi. Kami telah menggabungkan Collection "Fakultas" dan "Graduate Programs" menjadi satu collection terpadu bernama **"Academic Units"**.
+> 
+> **Keuntungan struktur baru:**
+> - ✅ Satu collection untuk Fakultas & Pascasarjana
+> - ✅ Struktur data konsisten dan mudah dikelola
+> - ✅ URL tetap terpisah (`/fakultas/[slug]` dan `/pascasarjana/[slug]`)
+> 
+> 📖 **Silakan gunakan:** [UNIFIED_ACADEMIC_UNITS_GUIDE.md](UNIFIED_ACADEMIC_UNITS_GUIDE.md)
+
+---
+
 ## Overview
 Panduan ini menjelaskan cara membuat dan mengelola Collection Type "Fakultas" di Strapi untuk menampilkan halaman detail fakultas dengan 3 variasi layout.
 
@@ -102,83 +115,7 @@ Create a component with:
 
 ## 3. Permissions
 
-Pastikan collection type "Fakultas" dapat diakses publik:
-
-1. Masuk ke **Settings → Roles → Public**
-2. Scroll ke **Fakultas**
-3. Centang permission: `find` dan `findOne`
-4. Save
-
-## 4. Contoh Data Fakultas
-
-### Fakultas Ekonomi (Layout: Modern)
-
-```json
-{
-  "name": "Fakultas Ekonomi",
-  "slug": "ekonomi",
-  "tagline": "Membentuk Pemimpin Bisnis Masa Depan",
-  "profile": "<p>Fakultas Ekonomi UIT adalah pusat keunggulan dalam pendidikan bisnis dan ekonomi...</p>",
-  "vision": "<p>Menjadi fakultas ekonomi terkemuka di Indonesia Timur...</p>",
-  "mission": "<ul><li>Menyelenggarakan pendidikan berkualitas...</li><li>Mengembangkan riset...</li></ul>",
-  "layout": "modern",
-  "stats": [
-    { "label": "Mahasiswa Aktif", "value": "1200+" },
-    { "label": "Dosen", "value": "45" },
-    { "label": "Program Studi", "value": "3" },
-    { "label": "Akreditasi", "value": "A" }
-  ],
-  "facilities": [
-    {
-      "name": "Laboratorium Akuntansi",
-      "description": "Lab dengan software akuntansi terkini"
-    }
-  ],
-  "achievements": [
-    {
-      "title": "Juara 1 Kompetisi Business Plan Nasional",
-      "description": "Tim mahasiswa berhasil meraih juara 1",
-      "year": "2024"
-    }
-  ],
-  "dean": {
-    "name": "Prof. Dr. Ahmad Hasan, S.E., M.M.",
-    "title": "Prof. Dr.",
-    "education": "S3 Manajemen"
-  },
-  "heads": [
-    {
-      "name": "Dr. Siti Aisyah, S.E., M.M.",
-      "title": "Dr.",
-      "program": "S1 Manajemen"
-    }
-  ],
-  "programs": [
-    {
-      "name": "Manajemen",
-      "degree": "S1",
-      "description": "Program studi manajemen...",
-      "accreditation": "A"
-    },
-    {
-      "name": "Akuntansi",
-      "degree": "S1",
-      "accreditation": "B"
-    }
-  ]
-}
-```
-
-### Fakultas Hukum (Layout: Classic)
-
-Setup dengan `"layout": "classic"` untuk tampilan tradisional dengan sidebar.
-
-### Fakultas Ilmu Komputer (Layout: Minimal)
-
-Setup dengan `"layout": "minimal"` untuk tampilan clean dan minimalis.
-
-## 5. URL Structure
-
+ j;jl;;l;l;;
 Setelah data dibuat, halaman fakultas akan tersedia di:
 - `/fakultas/ekonomi`
 - `/fakultas/hukum`
@@ -196,7 +133,7 @@ URL ini dibuat otomatis dari field `slug`.
 - **Facility Images**: 800x600px
 - **Photos**: 400x400px untuk foto profil
 
-### Layout Guidelines
+### Layout Guidelinesv/g/.gl jk kjkkhkkhkh,,,,,,N     jsyxyhgg gfggg
 - **Modern**: Cocok untuk fakultas dengan visual yang kuat, banyak foto dan statistik
 - **Classic**: Cocok untuk fakultas tradisional, fokus pada konten dan struktur organisasi
 - **Minimal**: Cocok untuk fakultas dengan fokus pada kesederhanaan dan keterbacaan
