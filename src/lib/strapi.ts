@@ -119,7 +119,7 @@ export interface AcademicUnit {
   heroImage?: string;
   profileImage?: string;
   layout?: 'modern' | 'classic' | 'minimal';
-  
+
   // Components
   stats?: Array<{
     label: string;
@@ -141,7 +141,7 @@ export interface AcademicUnit {
     date?: string;
     image?: string;
   }>;
-  
+
   // Leader (Dekan for Fakultas, Direktur for Pascasarjana)
   leader?: {
     name: string;
@@ -150,7 +150,7 @@ export interface AcademicUnit {
     photo?: string;
     education?: string;
   };
-  
+
   // Assistants (Kepala Prodi for Fakultas, Asisten Direktur for Pascasarjana)
   assistants?: Array<{
     name: string;
@@ -160,7 +160,7 @@ export interface AcademicUnit {
     photo?: string;
     education?: string;
   }>;
-  
+
   // Programs
   programs?: Array<{
     name: string;
@@ -472,7 +472,7 @@ export const getAllFakultas = async (): Promise<Fakultas[]> => {
     // Use unified collection, filter by fakultas type
     const units = await getAllAcademicUnits();
     const fakultas = units.filter(u => u.unitType === 'fakultas');
-    
+
     // Transform to legacy Fakultas interface for backward compatibility
     return fakultas.map(unit => ({
       ...unit,
@@ -490,7 +490,7 @@ export const getFakultas = async (slug: string): Promise<Fakultas | null> => {
   try {
     // Use unified collection
     const unit = await getAcademicUnit(slug);
-    
+
     if (!unit || unit.unitType !== 'fakultas') {
       return null;
     }
@@ -513,7 +513,7 @@ export const getAllPascasarjana = async (): Promise<Pascasarjana[]> => {
     // Use unified collection, filter by pascasarjana type
     const units = await getAllAcademicUnits();
     const pascasarjana = units.filter(u => u.unitType === 'pascasarjana');
-    
+
     // Transform to legacy Pascasarjana interface for backward compatibility
     return pascasarjana.map(unit => ({
       id: unit.id,
@@ -535,7 +535,7 @@ export const getPascasarjana = async (slug: string): Promise<Pascasarjana | null
   try {
     // Use unified collection
     const unit = await getAcademicUnit(slug);
-    
+
     if (!unit || unit.unitType !== 'pascasarjana') {
       return null;
     }
@@ -608,7 +608,7 @@ export const getGallery = async (
   try {
     console.log('========================================');
     console.log('[getGallery] Called with params:', { limit, category, programStudi, search, page });
-    
+
     // Build query parameters
     const params = new URLSearchParams();
 
@@ -643,7 +643,7 @@ export const getGallery = async (
     const fullUrl = `/galleries?${queryString}`;
     console.log('[getGallery] Query string:', queryString);
     console.log('[getGallery] Full URL:', `${STRAPI_API_URL}${fullUrl}`);
-    
+
     const response = await fetchStrapi(fullUrl);
 
     console.log('[getGallery] Response received:', {
@@ -652,7 +652,7 @@ export const getGallery = async (
       page: response.meta?.pagination?.page || 0,
       pageCount: response.meta?.pagination?.pageCount || 0
     });
-    
+
     // Log first item to see structure
     if (response.data?.[0]) {
       const firstItem = response.data[0];
@@ -681,7 +681,7 @@ export const getGallery = async (
         publishedAt: attrs.publishedAt,
         slug: attrs.slug || item.id.toString(),
       };
-      
+
       // Log each mapped item
       console.log('[getGallery] Mapped item:', {
         id: mappedItem.id,
@@ -690,7 +690,7 @@ export const getGallery = async (
         programStudi: mappedItem.programStudi,
         image: mappedItem.image
       });
-      
+
       return mappedItem;
     }) || [];
 
